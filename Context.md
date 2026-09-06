@@ -247,3 +247,90 @@ Consequences for the 2B harness:
       Intel SIMD instructions", FAST'13  <- the M3 vectorisation reference
  [31] Li et al. 2015, PPM, ICPP'15  <- the conference precursor to this paper
  [15] APCM, [20] EC-Wide, [29] STAIR codes  <- related-work comparisons
+
+
+---
+
+# MILESTONE 1 — 2B SWEEP RESULTS (harness built, full range run)
+
+Harness: `src/sweep.c`, `make sweep` -> `sd_sweep`, per-point CSV in
+`sweep_results.csv` (columns: n,m,s,r,w,z,u_S,pred_u_S,u_Finv,pred_u_Finv,
+measured,C1,delta,count_status,roundtrip). Driven by data/FAST-Coefficients.txt.
+
+## Numbers
+  sweep points (config x z) : 7938   <- matches the planned space exactly
+    skipped, w=32           : 3057   (no GF(2^32) backend yet)
+    skipped, geometry       :  105   (s > z*(n-m): the pattern cannot exist)
+    F singular              :    0
+    evaluated               : 4776
+  2B exact match            : 4592  (96.15%)
+     under (measured < C1)  :  184
+     over  (measured > C1)  :    0
+  2A round-trip pass        : 4650   fail 0   n/a 126 (s > n-m, no parity layout)
+
+## WHY 96.15% AND NOT 100%
+C1 splits into two halves, C1 = u(S) + u(F^-1). Both closed forms were derived
+algebraically from the Sec. 3.2 formula and are now checked separately by the
+harness:
+
+  u(S)    = (m+s)*(n*r - m*r - s)            -> 4776 ok,   0 off   EXACT ALWAYS
+  u(F^-1) = (m*r+s)*(m*z+s) + m^2*(r-z)      -> 4592 ok, 184 off   <- all drift
+
+  * u(S) is purely STRUCTURAL: it counts nonzeros of H on the surviving
+    columns, which follows from the sparse/dense row structure alone. It cannot
+    depend on coefficient values, and it never deviated.
+  * u(F^-1) is a GENERIC-POSITION estimate: it assumes no entry of the inverse
+    cancels to zero. With Plank's real published coefficients some entries do
+    cancel, so the measured count comes in LOWER. Never higher: 0 over-counts
+    in 4776 points.
+
+=> C1 is a TIGHT UPPER BOUND in general position, not an identity. This is
+   consistent with the paper's own footnote 3 (they derived C1 by printing
+   nonzero counts from their implementation, i.e. from whichever coefficients
+   they ran). "Exact match for every configuration" is therefore not achievable
+   as literally stated, and is the wrong pass/fail bar.
+
+## The deviation is structured, not noise
+  m s | match%        m s | match%
+  1 1 | 100.00        2 2 |  92.66
+  1 2 | 100.00        2 3 |  97.27
+  1 3 |  99.42        3 2 |  81.02
+  2 1 | 100.00        3 3 |  94.58
+  3 1 | 100.00
+All 1323 s=1 points match exactly for every m. Cancellation only appears once
+m>=2 AND s>=2, i.e. once F^-1 has enough structure to admit it. Worst observed
+delta -13 (SD^{3,2}_{5,4}, z=2: measured 147 vs C1 160).
+
+## Correct pass/fail gate for the report
+Use, and the harness prints it:
+    no OVER counts, no round-trip failures, no singular F
+  measured > C1 -> real bug in H or in the counting discipline.
+  measured < C1 -> coefficient cancellation, expected, benign.
+Current status: all three clean. (sd_sweep still exits 1 whenever any UNDER
+exists; flip to over||rt_fail||singular if it is wanted as a CI gate.)
+
+## Independent confirmation of H
+0 singular F across 4776 m-disk + s-sector patterns. The SD condition is
+precisely "decodes all combinations of m disks and s sectors", so a correct H
+plus valid table coefficients must never be singular here. It never was.
+Combined with 4650/4650 round-trips, the Sec. 2.2 implementation is validated.
+
+## z-placement rule (decision, was open)
+m leftmost disks fail entirely; the s extra faulty sectors spread over stripe
+rows 0..z-1 as evenly as possible, packed left to right from the first
+surviving disk. Deterministic and reproducible. Feasible iff s <= z*(n-m) and
+z <= r; the 105 skips are genuine geometric impossibilities (e.g. n=4, m=3
+leaves 1 surviving disk per row, so z=1 cannot host s=3), not failures.
+C1 depends only on (n,r,m,s,z), so placement within the z rows should not
+change the count -- untested, worth a spot-check if a reviewer asks.
+
+## RESOLVES the earlier open question
+The previous section asked whether the table's own coefficients ever
+under-count. They do: 184/4776. The main construction a_i = 2^i is exactly the
+related-coefficient case that cancels, as suspected.
+
+## Still open
+  - GF(2^32) backend -> unlocks the remaining 3057 points (1090 configs, 27%).
+    Needs split-table or carry-less multiply; log tables are impossible at 2^32.
+  - Throughput benchmarking at 32 MB stripes (MB/s).
+  - RS(n,m) construction for the symmetric-code comparison gPPM needs.
