@@ -14,14 +14,19 @@ Anything that would make it faster is deliberately left out — see
 [Deliberate omissions](#deliberate-omissions).
 
 Project plan and milestone breakdown: [`Context.md`](Context.md).
+Milestone report with the preserved literature review and appended results:
+[`final_report.pdf`](final_report.pdf).
 
 ---
 
 ## Quick start
 
 ```sh
-make          # builds ./sd_baseline
-make run      # builds and runs
+make           # builds sd_baseline, sd_sweep, and sd_benchmark
+make test      # focused GF/SD unit and integration tests
+make run       # paper Figure 2 smoke test
+make sweep     # full SD parameter range; writes sweep_results.csv
+make benchmark # 32 MiB baseline suite; writes benchmark_results.csv
 make clean
 ```
 
@@ -43,8 +48,7 @@ regression gate.
 
 ## What order things run in
 
-There is one executable. The ordering that matters is the **call order inside
-it**, which follows the paper's four steps exactly.
+The `sd_baseline` executable follows the paper's four steps in this call order:
 
 ```
 main.c
@@ -95,20 +99,21 @@ only on the ones above it.
 
 The bottom layer. Everything else is built on it.
 
-* `gf_t` holds a discrete-log table (`logt`) and an antilog table (`expt`) for
-  GF(2^w), w ∈ {8, 16}. `expt` is stored **doubled** (`2*nz+1` entries) so
-  `gf_mul` can index `logt[a]+logt[b]` directly without a modulo.
-* `gf_init` walks the powers of the generator `x = 2` under the primitive
-  polynomial (`0x11D` for w=8, `0x1100B` for w=16), filling both tables.
-* `gf_mul` / `gf_div` / `gf_inv` / `gf_pow` — field arithmetic via table
-  lookup. `gf_pow(a, e)` computes `expt[(e * logt[a]) mod nz]`.
+* `gf_t` holds discrete-log and doubled antilog tables for GF(2^8) and GF(2^16).
+  GF(2^32) cannot use a 2^32-entry log table, so it uses a scalar 8x8 split
+  table instead.
+* `gf_init` uses primitive polynomial `0x11D` for w=8, `0x1100B` for w=16,
+  and GF-Complete's default `0x00400007` reduction polynomial for w=32.
+* `gf_mul` / `gf_div` / `gf_inv` / `gf_pow` provide field arithmetic. Powers
+  use log tables for w=8/16 and square-and-multiply for w=32.
 * **`mult_XORs(d0, d1, a, nbytes, gf)`** — the paper's core primitive
   (Sec. 2.3): multiply region `d0` by the constant `a` over GF(2^w) and XOR the
-  product into region `d1`. Scalar loop, one table lookup per element.
+  product into region `d1`. It remains scalar; w=32 uses a per-constant byte
+  table for large regions so the reference backend is practical at 32 MiB.
 * `gf_mult_xors_count` — a global counter incremented once per `mult_XORs`
   call. This is the instrumentation that validation 2B reads.
 
-w=8 and w=16 cover the whole Milestone 1 sweep (`n*r ≤ 24*24 = 576` columns).
+w=8, w=16, and w=32 cover all 3,969 published FAST SD configurations.
 
 ### `src/matrix.h` / `src/matrix.c` — dense matrices over GF(2^w)
 
@@ -134,7 +139,7 @@ w=8 and w=16 cover the whole Milestone 1 sweep (`n*r ≤ 24*24 = 576` columns).
 
 | Rows | Meaning | Coefficient | Nonzeros/row |
 |---|---|---|---|
-| `m*i + l`, `0≤i<r`, `0≤l<m` | **disk parity** for stripe row `i` | `H(row, i*n+j) = a_l^j`, zero outside row `i` | `n` (sparse, row-local) |
+| `m*i + l`, `0≤i<r`, `0≤l<m` | **disk parity** for stripe row `i` | `H(row, i*n+j) = a_l^(i*n+j)`, zero outside row `i` | `n` (sparse, row-local) |
 | `m*r + l`, `0≤l<s` | **sector parity**, spans the whole stripe | `H(row, c) = a_{m+l}^c` | `n*r` (dense) |
 
 That sparse/dense asymmetry is what makes SD an *asymmetric parity* code, and
@@ -144,8 +149,8 @@ per stripe row) is fixed by the paper's Algorithm 1, which addresses rows
 `m*i … m*i+m-1` as the block belonging to stripe row `i`.
 
 `sd_parity_sectors` returns the `m*r + s` coding-sector indices: the `m`
-rightmost disks in full, plus `s` extra sectors in the last stripe row working
-leftwards. Requires `s ≤ n - m`.
+rightmost disks in full, plus the `s` highest-numbered sectors outside those
+disks. Extra parity may span multiple rows when `s > n-m`.
 
 ### `src/codec.h` / `src/codec.c` — **Steps 2–4**, the codec
 
@@ -186,6 +191,17 @@ For this configuration it gives 35, and the measured count is 35, decomposing
 as `u(S) = 22` + `u(F^-1) = 13`. Both halves were also verified by hand against
 the paper before the code was written.
 
+### `src/coefficients.c`, `src/sweep.c`, and `src/benchmark.c`
+
+* `coefficients.c` strictly loads the complete published FAST coefficient grid
+  and rejects malformed, duplicate, missing, or out-of-range records.
+* `sweep.c` validates every feasible `(configuration, z)` point and writes the
+  detailed operation counts and round-trip status to `sweep_results.csv`.
+* `benchmark.c` runs the reproducible 32 MiB sequential encode/decode suite and
+  writes every timed trial to `benchmark_results.csv`.
+* `tests/test_gf.c` and `tests/test_sd.c` cover field arithmetic, the upstream
+  FAST matrix, multi-row parity placement, and a GF(2^32) round trip.
+
 ---
 
 ## Two counting rules
@@ -197,9 +213,9 @@ well-meaning optimisation:
 1. **Never call `mult_XORs` with `a == 0`.** `C1 = u(F^-1) + u(S)` counts
    *nonzero* coefficients. Callers skip zeros; `mult_XORs` asserts on zero.
 2. **Always call it with `a == 1`.** `C1` counts nonzeros, *not* non-ones.
-   Special-casing `a == 1` into a plain XOR would push the measured count below
-   `C1` — and would also erase the `u` vs `v` distinction that gPPM monetises
-   in Milestone 3. Keep the baseline honest so that gain stays visible.
+   The primitive may perform a direct XOR internally, but the caller must still
+   invoke it so the operation is counted and the `u` versus `v` distinction
+   remains available to later milestones.
 
 ---
 
@@ -208,11 +224,12 @@ well-meaning optimisation:
 `C1` is the **generic** nonzero count. Measured `C` can come in *below* it when
 algebraically related coefficients cause an entry of `F^-1` to cancel to zero.
 
-Probing 15 configurations, 13 matched `C1` exactly — including the paper's own
-`SD^{2,2}_{6,4}(8 | 1, 42, 26, 61)` at `z=1` and `z=2`. The two misses were both
-short by exactly 1 in `u(F^-1)`, both on invented coefficient sets. Sweeping
-200 random coefficient sets per configuration, mismatches were **always under,
-never over**.
+The completed sweep evaluates one deterministic failure layout for every
+geometrically feasible `(configuration, z)` point: 7,833 layouts from 3,969
+published configurations. It finds 7,649 exact C1 matches and 184 under-counts.
+Every under-count comes from a zero created in `F^-1`; `u(S)` is exact in all
+7,833 tested layouts. There are no over-counts, singular matrices, internal
+count mismatches, encode failures, or round-trip failures.
 
 Consequences for the Milestone 1 sweep:
 
@@ -221,8 +238,7 @@ Consequences for the Milestone 1 sweep:
 * **Mismatch direction is a diagnostic.** Measured `> C1` means a real bug in
   `H` or in the counting discipline. Measured `< C1` most likely means
   degenerate coefficients.
-* Roughly 2–6% of random coefficient sets leave `F` singular for a given
-  pattern, so the sweep harness needs a redraw path and should log the rate.
+* Published coefficients produce no singular matrices for the tested patterns.
 
 ---
 
@@ -244,9 +260,31 @@ before PPM's threads touch it.
 
 ---
 
-## Not yet built
+## Completed validation
 
-* The full 2B sweep harness over `4≤n≤24, 4≤r≤24, 1≤m≤3, 1≤s≤3, 1≤z≤s`
-  (7938 configurations), with valid coefficient tables.
-* Throughput benchmarking at 32 MB stripes (MB/s).
-* RS(n, m) construction for the symmetric-code comparison gPPM needs.
+`make sweep` covers 7,938 `(configuration, z)` points: 105 are geometrically
+impossible, and one deterministic layout for each of the 7,833 feasible points
+passes. This is full parameter-grid coverage, not exhaustive enumeration of
+every possible disk/sector placement. Full details are in `sweep_results.csv`.
+
+`make benchmark` runs ten encode and ten decode trials for each `n=16`, `r=16`,
+`z=1`, `m,s in {1,2,3}` configuration using an exact 32 MiB codeword. All 180
+trials pass validation. Mean useful-data throughput on the recorded Intel Core
+Ultra 9 185H / GCC 11.4.0 `-O2` run was:
+
+| m | s | Field | C | Encode MiB/s | Decode MiB/s |
+|---:|---:|---|---:|---:|---:|
+| 1 | 1 | GF(2^8) | 527 | 852.60 | 854.58 |
+| 1 | 2 | GF(2^16) | 783 | 634.68 | 631.51 |
+| 1 | 3 | GF(2^32) | 1039 | 673.01 | 671.77 |
+| 2 | 1 | GF(2^8) | 828 | 444.98 | 447.81 |
+| 2 | 2 | GF(2^16) | 1084 | 399.48 | 401.21 |
+| 2 | 3 | GF(2^32) | 1340 | 479.27 | 476.19 |
+| 3 | 1 | GF(2^8) | 1159 | 282.56 | 275.55 |
+| 3 | 2 | GF(2^16) | 1415 | 276.56 | 279.68 |
+| 3 | 3 | GF(2^32) | 1671 | 352.91 | 349.51 |
+
+The paper used different CPUs and SIMD acceleration, so these values are the
+local scalar baseline for later speedup calculations, not a direct reproduction
+of the paper's absolute rates. RS construction remains future gPPM comparison
+work rather than part of this SD baseline.

@@ -24,7 +24,7 @@ static inline int sd_cols(const sd_code_t *c) { return c->n * c->r; }        /* 
  * m*i .. m*i+m-1 as the block belonging to stripe row i):
  *
  *   rows m*i + l,  0<=i<r, 0<=l<m   disk parity for stripe row i,
- *                                   H(row, i*n+j) = a_l^j, zero elsewhere.
+ *                                   H(row, i*n+j) = a_l^(i*n+j), zero elsewhere.
  *                                   Row-local: n nonzeros per row.
  *   rows m*r + l,  0<=l<s           sector parity, spanning the whole stripe,
  *                                   H(row, c) = a_{m+l}^c.
@@ -35,10 +35,14 @@ static inline int sd_cols(const sd_code_t *c) { return c->n * c->r; }        /* 
  */
 int sd_build_H(const sd_code_t *code, const gf_t *gf, gf_mat *H);
 
-/* Sector indices of the m*r + s coding sectors, ascending.
- * Convention: the m rightmost disks are the coding disks, and the s extra
- * coding sectors sit in the last stripe row, working leftwards from the
- * coding disks.  Requires s <= n - m.  'out' must hold m*r + s ints. */
+/* Sector indices of the m*r + s coding sectors, ascending.  The m rightmost
+ * disks are coding disks; the s highest-numbered sectors outside those disks
+ * are the additional coding sectors.  'out' must hold m*r + s ints. */
 int sd_parity_sectors(const sd_code_t *code, int *out);
+
+/* Deterministic worst-case failure pattern used by validation and benchmarks:
+ * the m leftmost disks plus s sectors spread over exactly z rows.  Returns
+ * m*r+s, or -1 when that geometry is impossible. */
+int sd_failure_sectors(const sd_code_t *code, int z, int *out);
 
 #endif /* SD_CODE_H */

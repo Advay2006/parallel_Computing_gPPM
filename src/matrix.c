@@ -5,10 +5,19 @@
 
 int mat_alloc(gf_mat *M, int rows, int cols)
 {
+    size_t count;
+
+    M->rows = M->cols = 0;
+    M->e = NULL;
+    if (rows <= 0 || cols <= 0 || (size_t)rows > SIZE_MAX / (size_t)cols)
+        return -1;
+    count = (size_t)rows * (size_t)cols;
+    if (count > SIZE_MAX / sizeof *M->e) return -1;
+    M->e = calloc(count, sizeof *M->e);
+    if (!M->e) return -1;
     M->rows = rows;
     M->cols = cols;
-    M->e = calloc((size_t)rows * cols, sizeof *M->e);
-    return M->e ? 0 : -1;
+    return 0;
 }
 
 void mat_free(gf_mat *M)

@@ -9,37 +9,31 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/* Supported word sizes.  w=8 and w=16 cover the whole Milestone 1 parameter
- * sweep (n*r <= 24*24 = 576 columns).  w=32 would need a different (non-table)
- * multiply and is not needed until wide stripes. */
+/* w=8 and w=16 use log/antilog tables.  A full log table is impractical for
+ * w=32, so that field uses a scalar 8x8 split table instead. */
 typedef struct {
     int       w;      /* word size in bits                     */
-    uint32_t  order;  /* 2^w                                   */
+    uint64_t  order;  /* 2^w                                   */
     uint32_t  nz;     /* 2^w - 1, the multiplicative order     */
     uint32_t *logt;   /* [order]    discrete log, logt[0] unused */
     uint32_t *expt;   /* [2*nz + 1] antilog, doubled to skip a modulo */
+    uint32_t *split8; /* w=32: 16 tables of 256x256 products    */
 } gf_t;
 
 int  gf_init(gf_t *gf, int w);
 void gf_free(gf_t *gf);
 
+uint32_t gf_mul32(const gf_t *gf, uint32_t a, uint32_t b);
+
 static inline uint32_t gf_mul(const gf_t *gf, uint32_t a, uint32_t b)
 {
     if (a == 0 || b == 0) return 0;
+    if (gf->w == 32) return gf_mul32(gf, a, b);
     return gf->expt[gf->logt[a] + gf->logt[b]];
 }
 
-static inline uint32_t gf_inv(const gf_t *gf, uint32_t a)
-{
-    return gf->expt[gf->nz - gf->logt[a]];   /* a != 0 required */
-}
-
-static inline uint32_t gf_div(const gf_t *gf, uint32_t a, uint32_t b)
-{
-    if (a == 0) return 0;                    /* b != 0 required */
-    return gf->expt[gf->logt[a] + gf->nz - gf->logt[b]];
-}
-
+uint32_t gf_inv(const gf_t *gf, uint32_t a);
+uint32_t gf_div(const gf_t *gf, uint32_t a, uint32_t b);
 uint32_t gf_pow(const gf_t *gf, uint32_t a, uint32_t e);
 
 /* ---- mult_XORs() ------------------------------------------------------- */

@@ -25,9 +25,9 @@ int ec_split(const gf_mat *H, const int *faulty, int nf,
 
 /* Step 4.  BF = Finv * (S * BS), normal sequence.  Reads the surviving sectors
  * of 'stripe' and overwrites the faulty ones with the recovered contents. */
-void ec_decode_normal(const gf_mat *Finv, const gf_mat *S,
-                      const int *faulty, const int *surviving,
-                      uint8_t *stripe, size_t sector_bytes, const gf_t *gf);
+int ec_decode_normal(const gf_mat *Finv, const gf_mat *S,
+                     const int *faulty, const int *surviving,
+                     uint8_t *stripe, size_t sector_bytes, const gf_t *gf);
 
 /* Steps 2-4 together.  Returns 0, or -1 if F is singular for this failure
  * pattern (the pattern lies outside the code's correctable set).
