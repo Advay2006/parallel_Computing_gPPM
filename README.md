@@ -14,8 +14,9 @@ Anything that would make it faster is deliberately left out — see
 [Deliberate omissions](#deliberate-omissions).
 
 Project plan and milestone breakdown: [`Context.md`](Context.md).
-Milestone report with the preserved literature review and appended results:
-[`final_report.pdf`](final_report.pdf).
+Standalone Milestone 1 report: [`Milestone_1_Report.pdf`](docs/Milestone_1_Report.pdf).
+Original literature review with the validated baseline results appended:
+[`finalfi_with_baseline_results.pdf`](docs/finalfi_with_baseline_results.pdf).
 
 ---
 

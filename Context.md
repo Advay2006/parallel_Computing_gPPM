@@ -6,8 +6,9 @@ Selected paper:
 > "gPPM: A Generalized Matrix Operation and Parallel Algorithm to Accelerate
 > the Encoding/Decoding Process of Erasure Codes." ACM TACO 20(4), 2023.
 
-The source paper is stored as `pc project paper.pdf`. The Milestone 1 report is
-`final_report.pdf`; its editable source is `final_report.docx`.
+The source paper is stored as `pc project paper.pdf`. The standalone Milestone 1
+report is `Milestone_1_Report.pdf`; `finalfi_with_baseline_results.pdf` preserves
+the original literature review and appends the validated baseline results.
 
 ## Evaluation milestones
 
@@ -92,7 +93,7 @@ validation, checksums, and output are outside the timed region.
 The recorded environment is an Intel Core Ultra 9 185H with GCC 11.4.0 `-O2`.
 The executable is single-threaded and has no SIMD. All 180 measured trials pass.
 The complete raw data is in `benchmark_results.csv`; the mean throughput table
-is in `README.md` and `final_report.pdf`.
+is in `README.md` and both Milestone 1 reports.
 
 ## Deliberate later work
 
@@ -118,4 +119,7 @@ The following features are not part of the sequential baseline:
 | `data/FAST-Coefficients.txt` | Published SD coefficient grid |
 | `sweep_results.csv` | Per-point correctness results |
 | `benchmark_results.csv` | Per-trial timing and validation results |
-| `final_report.pdf` | Literature review plus Milestone 1 results |
+| `Milestone_1_Report.pdf` | Polished standalone Milestone 1 report |
+| `Milestone_1_Report.docx` | Editable source for the standalone report |
+| `finalfi_with_baseline_results.pdf` | Original literature review with appended baseline results |
+| `finalfi_with_baseline_results.docx` | Editable source for the appended report |
