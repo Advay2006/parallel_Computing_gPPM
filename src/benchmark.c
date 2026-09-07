@@ -219,7 +219,7 @@ done:
 int main(int argc, char **argv)
 {
     const char *coeff_path = argc > 1 ? argv[1] : "data/FAST-Coefficients.txt";
-    const char *csv_path = argc > 2 ? argv[2] : "benchmark_results.csv";
+    const char *csv_path = argc > 2 ? argv[2] : "results/benchmark_results.csv";
     int trials = DEFAULT_TRIALS;
     sd_coeff_table table = { 0 };
     gf_t gf8 = { 0 }, gf16 = { 0 }, gf32 = { 0 };

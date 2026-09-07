@@ -6,9 +6,10 @@ Selected paper:
 > "gPPM: A Generalized Matrix Operation and Parallel Algorithm to Accelerate
 > the Encoding/Decoding Process of Erasure Codes." ACM TACO 20(4), 2023.
 
-The source paper is stored as `pc project paper.pdf`. The standalone Milestone 1
-report is `Milestone_1_Report.pdf`; `finalfi_with_baseline_results.pdf` preserves
-the original literature review and appends the validated baseline results.
+The source paper is stored as `docs/pc project paper.pdf`. The standalone
+Milestone 1 report is `docs/Milestone_1_Report.pdf`;
+`docs/finalfi_with_baseline_results.pdf` preserves the original literature
+review and appends the validated baseline results.
 
 ## Evaluation milestones
 
@@ -81,7 +82,7 @@ not enumerate every combinatorial placement of disk and sector failures.
 The Figure 2 smoke test also reproduces `u(S)=22`, `u(F^-1)=13`, and
 `C=35=C1`, with zero syndrome after encoding and recovery.
 
-Full per-point results are in `sweep_results.csv`.
+Full per-point results are in `results/sweep_results.csv`.
 
 ## Benchmark results
 
@@ -92,8 +93,8 @@ validation, checksums, and output are outside the timed region.
 
 The recorded environment is an Intel Core Ultra 9 185H with GCC 11.4.0 `-O2`.
 The executable is single-threaded and has no SIMD. All 180 measured trials pass.
-The complete raw data is in `benchmark_results.csv`; the mean throughput table
-is in `README.md` and both Milestone 1 reports.
+The complete raw data is in `results/benchmark_results.csv`; the mean throughput
+table is in `README.md` and both Milestone 1 reports.
 
 ## Deliberate later work
 
@@ -117,9 +118,9 @@ The following features are not part of the sequential baseline:
 | `src/sweep.c` | Full SD correctness and operation-count sweep |
 | `src/benchmark.c` | Sequential 32 MiB throughput benchmark |
 | `data/FAST-Coefficients.txt` | Published SD coefficient grid |
-| `sweep_results.csv` | Per-point correctness results |
-| `benchmark_results.csv` | Per-trial timing and validation results |
-| `Milestone_1_Report.pdf` | Polished standalone Milestone 1 report |
-| `Milestone_1_Report.docx` | Editable source for the standalone report |
-| `finalfi_with_baseline_results.pdf` | Original literature review with appended baseline results |
-| `finalfi_with_baseline_results.docx` | Editable source for the appended report |
+| `results/sweep_results.csv` | Per-point correctness results |
+| `results/benchmark_results.csv` | Per-trial timing and validation results |
+| `docs/Milestone_1_Report.pdf` | Polished standalone Milestone 1 report |
+| `docs/Milestone_1_Report.docx` | Editable source for the standalone report |
+| `docs/finalfi_with_baseline_results.pdf` | Original literature review with appended baseline results |
+| `docs/finalfi_with_baseline_results.docx` | Editable source for the appended report |

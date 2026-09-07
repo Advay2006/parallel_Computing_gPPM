@@ -23,13 +23,24 @@ Original literature review with the validated baseline results appended:
 ## Quick start
 
 ```sh
-make           # builds sd_baseline, sd_sweep, and sd_benchmark
+make           # builds executables under build/
 make test      # focused GF/SD unit and integration tests
 make run       # paper Figure 2 smoke test
-make sweep     # full SD parameter range; writes sweep_results.csv
-make benchmark # 32 MiB baseline suite; writes benchmark_results.csv
+make sweep     # full SD parameter range; writes results/sweep_results.csv
+make benchmark # 32 MiB baseline suite; writes results/benchmark_results.csv
 make clean
 ```
+
+## Repository layout
+
+| Path | Contents |
+|---|---|
+| `src/` | Baseline implementation and command-line programs |
+| `tests/` | Unit and integration tests |
+| `data/` | Published FAST coefficient input |
+| `docs/` | PDF and DOCX project documents |
+| `results/` | Correctness-sweep and benchmark CSV output |
+| `build/` | Generated executables |
 
 Expected output (the paper's Figure 2 example, `SD^{1,1}_{4,4}(8 | 1, 2)`):
 
@@ -49,7 +60,7 @@ regression gate.
 
 ## What order things run in
 
-The `sd_baseline` executable follows the paper's four steps in this call order:
+The `build/sd_baseline` executable follows the paper's four steps in this call order:
 
 ```
 main.c
@@ -197,9 +208,9 @@ the paper before the code was written.
 * `coefficients.c` strictly loads the complete published FAST coefficient grid
   and rejects malformed, duplicate, missing, or out-of-range records.
 * `sweep.c` validates every feasible `(configuration, z)` point and writes the
-  detailed operation counts and round-trip status to `sweep_results.csv`.
+  detailed operation counts and round-trip status to `results/sweep_results.csv`.
 * `benchmark.c` runs the reproducible 32 MiB sequential encode/decode suite and
-  writes every timed trial to `benchmark_results.csv`.
+  writes every timed trial to `results/benchmark_results.csv`.
 * `tests/test_gf.c` and `tests/test_sd.c` cover field arithmetic, the upstream
   FAST matrix, multi-row parity placement, and a GF(2^32) round trip.
 
@@ -266,7 +277,8 @@ before PPM's threads touch it.
 `make sweep` covers 7,938 `(configuration, z)` points: 105 are geometrically
 impossible, and one deterministic layout for each of the 7,833 feasible points
 passes. This is full parameter-grid coverage, not exhaustive enumeration of
-every possible disk/sector placement. Full details are in `sweep_results.csv`.
+every possible disk/sector placement. Full details are in
+`results/sweep_results.csv`.
 
 `make benchmark` runs ten encode and ten decode trials for each `n=16`, `r=16`,
 `z=1`, `m,s in {1,2,3}` configuration using an exact 32 MiB codeword. All 180

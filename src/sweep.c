@@ -39,7 +39,7 @@ static uint8_t rnd_byte(void)
 int main(int argc, char **argv)
 {
     const char *coeff_path = argc > 1 ? argv[1] : "data/FAST-Coefficients.txt";
-    const char *csv_path = argc > 2 ? argv[2] : "sweep_results.csv";
+    const char *csv_path = argc > 2 ? argv[2] : "results/sweep_results.csv";
     sd_coeff_table table = { 0 };
     gf_t gf8 = { 0 }, gf16 = { 0 }, gf32 = { 0 };
     FILE *csv = NULL;
