@@ -24,6 +24,10 @@ long mat_nonzeros(const gf_mat *M);
  * sequence; it is what gPPM's C = u + c*v needs in Milestone 3. */
 long mat_non_ones(const gf_mat *M);
 
+/* Dense coefficient-matrix multiplication over GF(2^w).  This does not use
+ * mult_XORs(), because the paper's C metric counts block-region operations. */
+int  mat_mul(const gf_mat *A, const gf_mat *B, const gf_t *gf, gf_mat *out);
+
 /* Gauss-Jordan inversion.  Returns 0 on success, -1 if A is singular. */
 int  mat_invert(const gf_mat *A, const gf_t *gf, gf_mat *out);
 
