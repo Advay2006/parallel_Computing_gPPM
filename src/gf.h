@@ -51,9 +51,9 @@ uint32_t gf_pow(const gf_t *gf, uint32_t a, uint32_t e);
 void mult_XORs(const uint8_t *d0, uint8_t *d1, uint32_t a,
                size_t nbytes, const gf_t *gf);
 
-/* Instrumentation.  Single global counter: this baseline is single-threaded.
- * Milestone 2 will need to make this per-thread before PPM's threads touch it. */
-extern uint64_t gf_mult_xors_count;
+/* Instrumentation.  Each thread owns its counter so parallel recovery does not
+ * add synchronization to the region-arithmetic hot path. */
+extern _Thread_local uint64_t gf_mult_xors_count;
 static inline void     gf_count_reset(void) { gf_mult_xors_count = 0; }
 static inline uint64_t gf_count_get(void)   { return gf_mult_xors_count; }
 

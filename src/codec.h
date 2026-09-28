@@ -1,8 +1,6 @@
-/* codec.h -- Steps 2-4 of paper Sec. 2.2: the traditional (baseline)
- * encode/decode.  Normal sequence only: S*BS first, then F^-1*(S*BS).
- * The matrix_first sequence is deliberately absent -- it belongs to gPPM in
- * Milestone 3, and implementing it here would blur the C1 baseline.
- */
+/* codec.h -- Reusable matrix-decoding operations.  ec_recover() preserves the
+ * traditional normal-sequence baseline; PPM separately uses the fixed
+ * matrix-first primitive for its independent submatrices. */
 #ifndef CODEC_H
 #define CODEC_H
 
@@ -28,6 +26,13 @@ int ec_split(const gf_mat *H, const int *faulty, int nf,
 int ec_decode_normal(const gf_mat *Finv, const gf_mat *S,
                      const int *faulty, const int *surviving,
                      uint8_t *stripe, size_t sector_bytes, const gf_t *gf);
+
+/* Fixed matrix-first sequence used by PPM's independent submatrices:
+ * G = Finv*S, then BF = G*BS.  Its block-region cost is u(G). */
+int ec_decode_matrix_first(const gf_mat *Finv, const gf_mat *S,
+                           const int *faulty, const int *surviving,
+                           uint8_t *stripe, size_t sector_bytes,
+                           const gf_t *gf);
 
 /* Steps 2-4 together.  Returns 0, or -1 if F is singular for this failure
  * pattern (the pattern lies outside the code's correctable set).

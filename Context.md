@@ -16,7 +16,7 @@ review and appends the validated baseline results.
 | Milestone | Required work |
 |---|---|
 | 1 | Literature review, target metrics, and a sequential C/Python baseline |
-| 2 | Initial OpenMP/CUDA/MPI implementation and scaling comparison |
+| 2 | PPM matrix partitioning, OpenMP recovery, and scaling comparison |
 | 3 | Advanced optimization such as communication hiding, tiling, vectorization, or hybrid scaling |
 | 4 | Profiling, final benchmarks, and research paper |
 
@@ -105,10 +105,29 @@ The following features are not part of the sequential baseline:
 | PPM log table and matrix partitioning | 2 |
 | OpenMP recovery of independent sub-matrices | 2 |
 | Parallel-versus-sequential scaling results | 2 |
-| Matrix-first sequence and dynamic sequence selection | 3 |
+| Fixed matrix-first sequence for PPM independent sub-matrices | 2 |
+| Dynamic normal-vs-matrix-first sequence selection | 3 |
 | SIMD/SSE/AVX region arithmetic | 3 |
 | RS construction for generalized comparison | 3 |
 | Profiling and final bottleneck analysis | 4 |
+
+## Milestone 2 results
+
+The PPM implementation uses fixed matrix-first decoding for independent SD
+sub-matrices, an OpenMP loop with a required barrier, and normal-sequence
+decoding for the dependent remainder. The original `ec_recover()` remains the
+sequential baseline.
+
+Correctness validation reproduces paper Figure 3 (`C=35` baseline, `C=29`
+PPM) and evaluates all 7,833 feasible published `(configuration, z)` points at
+`T=1` and `T=4`. Every byte comparison, syndrome check, partition check, and
+thread-count operation-count comparison passes.
+
+The 32 MiB decode benchmark runs the baseline and PPM at `T=1,2,4,8` for all
+nine `n=16`, `r=16`, `z=1`, `m,s in {1,2,3}` configurations. All 450 measured
+trials pass validation. Median speedup ranges from `1.02x` to `1.24x` at `T=1`
+and reaches `2.33x` at `T=8`. Raw results are in
+`results/ppm_benchmark_results.csv`.
 
 ## Main artifacts
 
@@ -117,6 +136,10 @@ The following features are not part of the sequential baseline:
 | `src/main.c` | Figure 2 smoke test |
 | `src/sweep.c` | Full SD correctness and operation-count sweep |
 | `src/benchmark.c` | Sequential 32 MiB throughput benchmark |
+| `src/ppm.c` | SD partitioning and OpenMP PPM recovery |
+| `src/ppm_sweep.c` | Full-grid PPM correctness and thread-invariance sweep |
+| `src/ppm_benchmark.c` | Baseline-versus-PPM decode scaling benchmark |
+| `Milestone2_Design.md` | Detailed Milestone 2 design and validation gates |
 | `data/FAST-Coefficients.txt` | Published SD coefficient grid |
 | `results/sweep_results.csv` | Per-point correctness results |
 | `results/benchmark_results.csv` | Per-trial timing and validation results |

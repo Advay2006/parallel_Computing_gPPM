@@ -76,6 +76,35 @@ int ec_decode_normal(const gf_mat *Finv, const gf_mat *S,
     return 0;
 }
 
+int ec_decode_matrix_first(const gf_mat *Finv, const gf_mat *S,
+                           const int *faulty, const int *surviving,
+                           uint8_t *stripe, size_t sector_bytes,
+                           const gf_t *gf)
+{
+    gf_mat G = { 0 };
+    int i, j;
+
+    if (!Finv || !S || !faulty || !surviving || !stripe || !gf ||
+        Finv->rows != Finv->cols || Finv->cols != S->rows ||
+        sector_bytes == 0 || sector_bytes % (size_t)(gf->w / 8) != 0)
+        return -1;
+    if (mat_mul(Finv, S, gf, &G) != 0) return -1;
+
+    for (i = 0; i < G.rows; i++) {
+        uint8_t *dst = stripe + (size_t)faulty[i] * sector_bytes;
+        memset(dst, 0, sector_bytes);
+        for (j = 0; j < G.cols; j++) {
+            uint32_t a = MAT(&G, i, j);
+            if (a == 0) continue;
+            mult_XORs(stripe + (size_t)surviving[j] * sector_bytes,
+                      dst, a, sector_bytes, gf);
+        }
+    }
+
+    mat_free(&G);
+    return 0;
+}
+
 int ec_recover(const gf_mat *H, const int *faulty, int nf,
                uint8_t *stripe, size_t sector_bytes, const gf_t *gf,
                decode_stats_t *stats)

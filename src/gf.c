@@ -3,7 +3,8 @@
 #include <assert.h>
 #include <string.h>
 
-uint64_t gf_mult_xors_count = 0;
+/* Counting stays off the shared hot path during OpenMP recovery. */
+_Thread_local uint64_t gf_mult_xors_count = 0;
 
 /* Primitive polynomials (Plank's conventional choices). */
 #define PRIM_POLY_8   0x11DU

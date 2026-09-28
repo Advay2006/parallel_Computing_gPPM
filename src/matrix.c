@@ -51,6 +51,27 @@ long mat_non_ones(const gf_mat *M)
     return c;
 }
 
+int mat_mul(const gf_mat *A, const gf_mat *B, const gf_t *gf, gf_mat *out)
+{
+    int i, j, k;
+
+    if (!A || !B || !gf || !out || !A->e || !B->e ||
+        A->cols != B->rows)
+        return -1;
+    if (mat_alloc(out, A->rows, B->cols) != 0) return -1;
+
+    for (i = 0; i < A->rows; i++)
+        for (k = 0; k < A->cols; k++) {
+            uint32_t a = MAT(A, i, k);
+            if (a == 0) continue;
+            for (j = 0; j < B->cols; j++) {
+                uint32_t b = MAT(B, k, j);
+                if (b != 0) MAT(out, i, j) ^= gf_mul(gf, a, b);
+            }
+        }
+    return 0;
+}
+
 int mat_invert(const gf_mat *A, const gf_t *gf, gf_mat *out)
 {
     int n = A->rows, col, i, j, piv;
