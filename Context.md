@@ -133,12 +133,11 @@ and reaches `2.33x` at `T=8`. Raw results are in
 
 | Artifact | Purpose |
 |---|---|
-| `src/main.c` | Figure 2 smoke test |
-| `src/sweep.c` | Full SD correctness and operation-count sweep |
-| `src/benchmark.c` | Sequential 32 MiB throughput benchmark |
-| `src/ppm.c` | SD partitioning and OpenMP PPM recovery |
-| `src/ppm_sweep.c` | Full-grid PPM correctness and thread-invariance sweep |
-| `src/ppm_benchmark.c` | Baseline-versus-PPM decode scaling benchmark |
+| `src/milestone1/` | Complete standalone Milestone 1 sequential implementation and programs |
+| `src/milestone2/` | Complete standalone Milestone 2 PPM implementation and programs |
+| `src/milestone2/ppm.c` | SD partitioning and OpenMP PPM recovery |
+| `src/milestone2/ppm_sweep.c` | Full-grid PPM correctness and thread-invariance sweep |
+| `src/milestone2/ppm_benchmark.c` | Baseline-versus-PPM decode scaling benchmark |
 | `Milestone2_Design.md` | Detailed Milestone 2 design and validation gates |
 | `data/FAST-Coefficients.txt` | Published SD coefficient grid |
 | `results/sweep_results.csv` | Per-point correctness results |

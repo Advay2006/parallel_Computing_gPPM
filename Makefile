@@ -1,12 +1,15 @@
 CC      = gcc
 CFLAGS  = -O2 -Wall -Wextra -std=c11
-CPPFLAGS = -Isrc
 OMPFLAGS ?= -fopenmp
 PYTHON  ?= python3
-CORE    = src/gf.c src/matrix.c src/sd_code.c src/codec.c
-PPM_CORE = $(CORE) src/ppm.c
-COEFF   = src/coefficients.c
-HEADERS = src/gf.h src/matrix.h src/sd_code.h src/codec.h src/ppm.h src/coefficients.h
+M1_DIR  = src/milestone1
+M2_DIR  = src/milestone2
+M1_CORE = $(M1_DIR)/gf.c $(M1_DIR)/matrix.c $(M1_DIR)/sd_code.c $(M1_DIR)/codec.c
+M2_CORE = $(M2_DIR)/gf.c $(M2_DIR)/matrix.c $(M2_DIR)/sd_code.c $(M2_DIR)/codec.c $(M2_DIR)/ppm.c
+M1_COEFF = $(M1_DIR)/coefficients.c
+M2_COEFF = $(M2_DIR)/coefficients.c
+M1_HEADERS = $(M1_DIR)/gf.h $(M1_DIR)/matrix.h $(M1_DIR)/sd_code.h $(M1_DIR)/codec.h $(M1_DIR)/coefficients.h
+M2_HEADERS = $(M2_DIR)/gf.h $(M2_DIR)/matrix.h $(M2_DIR)/sd_code.h $(M2_DIR)/codec.h $(M2_DIR)/ppm.h $(M2_DIR)/coefficients.h
 BUILD_DIR = build
 RESULTS_DIR = results
 PLOTS_DIR = $(RESULTS_DIR)/plots
@@ -25,32 +28,32 @@ all: $(BIN) $(SWEEP) $(BENCH) $(PPM_SWEEP) $(PPM_BENCH)
 $(BUILD_DIR) $(RESULTS_DIR):
 	mkdir -p $@
 
-$(BIN): $(CORE) src/main.c $(HEADERS) | $(BUILD_DIR)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $(CORE) src/main.c
+$(BIN): $(M1_CORE) $(M1_DIR)/main.c $(M1_HEADERS) | $(BUILD_DIR)
+	$(CC) -I$(M1_DIR) $(CFLAGS) -o $@ $(M1_CORE) $(M1_DIR)/main.c
 
-$(SWEEP): $(CORE) $(COEFF) src/sweep.c $(HEADERS) | $(BUILD_DIR)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $(CORE) $(COEFF) src/sweep.c
+$(SWEEP): $(M1_CORE) $(M1_COEFF) $(M1_DIR)/sweep.c $(M1_HEADERS) | $(BUILD_DIR)
+	$(CC) -I$(M1_DIR) $(CFLAGS) -o $@ $(M1_CORE) $(M1_COEFF) $(M1_DIR)/sweep.c
 
-$(BENCH): $(CORE) $(COEFF) src/benchmark.c $(HEADERS) | $(BUILD_DIR)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $(CORE) $(COEFF) src/benchmark.c
+$(BENCH): $(M1_CORE) $(M1_COEFF) $(M1_DIR)/benchmark.c $(M1_HEADERS) | $(BUILD_DIR)
+	$(CC) -I$(M1_DIR) $(CFLAGS) -o $@ $(M1_CORE) $(M1_COEFF) $(M1_DIR)/benchmark.c
 
-$(PPM_SWEEP): $(PPM_CORE) $(COEFF) src/ppm_sweep.c $(HEADERS) | $(BUILD_DIR)
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(OMPFLAGS) -o $@ $(PPM_CORE) $(COEFF) src/ppm_sweep.c
+$(PPM_SWEEP): $(M2_CORE) $(M2_COEFF) $(M2_DIR)/ppm_sweep.c $(M2_HEADERS) | $(BUILD_DIR)
+	$(CC) -I$(M2_DIR) $(CFLAGS) $(OMPFLAGS) -o $@ $(M2_CORE) $(M2_COEFF) $(M2_DIR)/ppm_sweep.c
 
-$(PPM_BENCH): $(PPM_CORE) $(COEFF) src/ppm_benchmark.c $(HEADERS) | $(BUILD_DIR)
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(OMPFLAGS) -o $@ $(PPM_CORE) $(COEFF) src/ppm_benchmark.c
+$(PPM_BENCH): $(M2_CORE) $(M2_COEFF) $(M2_DIR)/ppm_benchmark.c $(M2_HEADERS) | $(BUILD_DIR)
+	$(CC) -I$(M2_DIR) $(CFLAGS) $(OMPFLAGS) -o $@ $(M2_CORE) $(M2_COEFF) $(M2_DIR)/ppm_benchmark.c
 
-$(TEST_GF): src/gf.c tests/test_gf.c src/gf.h | $(BUILD_DIR)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ src/gf.c tests/test_gf.c
+$(TEST_GF): $(M1_DIR)/gf.c tests/test_gf.c $(M1_DIR)/gf.h | $(BUILD_DIR)
+	$(CC) -I$(M1_DIR) $(CFLAGS) -o $@ $(M1_DIR)/gf.c tests/test_gf.c
 
-$(TEST_SD): $(CORE) tests/test_sd.c $(HEADERS) | $(BUILD_DIR)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $(CORE) tests/test_sd.c
+$(TEST_SD): $(M1_CORE) tests/test_sd.c $(M1_HEADERS) | $(BUILD_DIR)
+	$(CC) -I$(M1_DIR) $(CFLAGS) -o $@ $(M1_CORE) tests/test_sd.c
 
-$(TEST_COEFF): $(COEFF) tests/test_coefficients.c src/coefficients.h | $(BUILD_DIR)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $(COEFF) tests/test_coefficients.c
+$(TEST_COEFF): $(M1_COEFF) tests/test_coefficients.c $(M1_DIR)/coefficients.h | $(BUILD_DIR)
+	$(CC) -I$(M1_DIR) $(CFLAGS) -o $@ $(M1_COEFF) tests/test_coefficients.c
 
-$(TEST_PPM): $(PPM_CORE) $(COEFF) tests/test_ppm.c $(HEADERS) | $(BUILD_DIR)
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(OMPFLAGS) -o $@ $(PPM_CORE) $(COEFF) tests/test_ppm.c
+$(TEST_PPM): $(M2_CORE) $(M2_COEFF) tests/test_ppm.c $(M2_HEADERS) | $(BUILD_DIR)
+	$(CC) -I$(M2_DIR) $(CFLAGS) $(OMPFLAGS) -o $@ $(M2_CORE) $(M2_COEFF) tests/test_ppm.c
 
 run: $(BIN)
 	./$(BIN)

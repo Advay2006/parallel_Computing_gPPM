@@ -772,9 +772,9 @@ slide = base("source excerpt", "From the M1 decoder to PPM jobs", 23)
 sub(slide, "The baseline solves one F; PPM first identifies independent physical rows.")
 rect(slide, .85, 2.23, 5.75, 3.72, LIGHT)
 rect(slide, 6.78, 2.23, 5.7, 3.72, LIGHT)
-label(slide, "M1  /  src/codec.c", 1.1, 2.45, 5.18, .42,
+label(slide, "M1  /  src/milestone1/codec.c", 1.1, 2.45, 5.18, .42,
       18, BLUE, bold=True)
-label(slide, "M2  /  src/ppm.c", 7.02, 2.45, 5.19, .42,
+label(slide, "M2  /  src/milestone2/ppm.c", 7.02, 2.45, 5.19, .42,
       18, ORANGE, bold=True)
 label(slide, "ns = ec_split(H, faulty, nf, &F, &S, surviving);\n"
       "if (mat_invert(&F, gf, &Finv) != 0) goto done;\n"
@@ -805,7 +805,7 @@ label(slide, "M2:  G = F⁻¹·S; BF = G·BS", 6.99, 6.2, 5.27, .41,
 slide = base("source excerpt", "Inside the OpenMP recovery", 24)
 sub(slide, "The loop owns disjoint jobs; leaving it is the barrier before the remainder.")
 rect(slide, .86, 2.3, 7.27, 4.37, LIGHT)
-label(slide, "src/ppm.c  ·  independent loop", 1.09, 2.48, 6.78, .38,
+label(slide, "src/milestone2/ppm.c  ·  independent loop", 1.09, 2.48, 6.78, .38,
       18, BLUE, bold=True)
 label(slide, "#pragma omp for schedule(static)\n"
       "for (i = 0; i < p; i++) {\n"
@@ -819,7 +819,7 @@ label(slide, "#pragma omp for schedule(static)\n"
       1.09, 3.02, 6.84, 3.34, 13, NAVY,
       font="Liberation Mono", valign="top")
 rect(slide, 8.43, 2.3, 4.03, 1.44, PALE_BLUE)
-label(slide, "src/gf.h  ·  thread-local", 8.67, 2.47, 3.58, .3,
+label(slide, "src/milestone2/gf.h  ·  thread-local", 8.67, 2.47, 3.58, .3,
       15, BLUE, bold=True)
 label(slide, "extern _Thread_local uint64_t\n"
       "    gf_mult_xors_count;", 8.67, 2.89, 3.5, .58,
