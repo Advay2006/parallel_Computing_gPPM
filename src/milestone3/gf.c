@@ -9,6 +9,12 @@
 #else
 #define GF_HAS_X86_SIMD 0
 #endif
+#if GF_HAS_X86_SIMD && (defined(__GNUC__) || defined(__clang__)) && \
+    !defined(M3_DISABLE_SIMD)
+#define GF_SIMD_BUILD 1
+#else
+#define GF_SIMD_BUILD 0
+#endif
 
 /* Counting stays off the shared hot path during OpenMP recovery. */
 _Thread_local uint64_t gf_mult_xors_count = 0;
@@ -260,7 +266,7 @@ static void mult_XORs_scalar_impl(const uint8_t *d0, uint8_t *d1, uint32_t a,
     }
 }
 
-#if GF_HAS_X86_SIMD && (defined(__GNUC__) || defined(__clang__))
+#if GF_SIMD_BUILD
 __attribute__((target("ssse3")))
 static void xor_region_ssse3(const uint8_t *src, uint8_t *dst, size_t nbytes)
 {
@@ -411,7 +417,7 @@ void mult_XORs(const uint8_t *d0, uint8_t *d1, uint32_t a,
 {
     assert(a != 0);          /* zero coefficients must be skipped by the caller */
     gf_mult_xors_count++;
-#if GF_HAS_X86_SIMD && (defined(__GNUC__) || defined(__clang__))
+#if GF_SIMD_BUILD
     if (gf->w == 8 && __builtin_cpu_supports("ssse3")) {
         if (a == 1)
             xor_region_ssse3(d0, d1, nbytes);

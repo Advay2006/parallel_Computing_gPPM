@@ -24,14 +24,14 @@ PPM_SWEEP = $(BUILD_DIR)/ppm_sweep
 PPM_BENCH = $(BUILD_DIR)/ppm_benchmark
 M3_SWEEP = $(BUILD_DIR)/m3_sweep
 M3_BENCH = $(BUILD_DIR)/m3_benchmark
-M3_SIMD_BENCH = $(BUILD_DIR)/m3_simd_benchmark
+M3_BENCH_SCALAR = $(BUILD_DIR)/m3_benchmark_scalar
 TEST_GF = $(BUILD_DIR)/test_gf
 TEST_SD = $(BUILD_DIR)/test_sd
 TEST_COEFF = $(BUILD_DIR)/test_coefficients
 TEST_PPM = $(BUILD_DIR)/test_ppm
 TEST_M3 = $(BUILD_DIR)/test_m3
 
-all: $(BIN) $(SWEEP) $(BENCH) $(PPM_SWEEP) $(PPM_BENCH) $(M3_SWEEP) $(M3_BENCH)
+all: $(BIN) $(SWEEP) $(BENCH) $(PPM_SWEEP) $(PPM_BENCH) $(M3_SWEEP) $(M3_BENCH) $(M3_BENCH_SCALAR)
 
 $(BUILD_DIR) $(RESULTS_DIR):
 	mkdir -p $@
@@ -57,8 +57,8 @@ $(M3_SWEEP): $(M3_CORE) $(M3_COEFF) $(M3_DIR)/ppm_sweep.c $(M3_HEADERS) | $(BUIL
 $(M3_BENCH): $(M3_CORE) $(M3_COEFF) $(M3_DIR)/ppm_benchmark.c $(M3_HEADERS) | $(BUILD_DIR)
 	$(CC) -I$(M3_DIR) $(CFLAGS) $(OMPFLAGS) -o $@ $(M3_CORE) $(M3_COEFF) $(M3_DIR)/ppm_benchmark.c
 
-$(M3_SIMD_BENCH): $(M3_DIR)/gf.c $(M3_DIR)/gf.h $(M3_DIR)/simd_benchmark.c | $(BUILD_DIR)
-	$(CC) -I$(M3_DIR) $(CFLAGS) -o $@ $(M3_DIR)/gf.c $(M3_DIR)/simd_benchmark.c
+$(M3_BENCH_SCALAR): $(M3_CORE) $(M3_COEFF) $(M3_DIR)/ppm_benchmark.c $(M3_HEADERS) | $(BUILD_DIR)
+	$(CC) -DM3_DISABLE_SIMD -I$(M3_DIR) $(CFLAGS) $(OMPFLAGS) -o $@ $(M3_CORE) $(M3_COEFF) $(M3_DIR)/ppm_benchmark.c
 
 $(TEST_GF): $(M1_DIR)/gf.c tests/test_gf.c $(M1_DIR)/gf.h | $(BUILD_DIR)
 	$(CC) -I$(M1_DIR) $(CFLAGS) -o $@ $(M1_DIR)/gf.c tests/test_gf.c
@@ -93,11 +93,15 @@ ppm-benchmark: $(PPM_BENCH) | $(RESULTS_DIR)
 m3-sweep: $(M3_SWEEP) | $(RESULTS_DIR)
 	./$(M3_SWEEP) data/FAST-Coefficients.txt $(RESULTS_DIR)/m3_sweep_results.csv
 
-m3-benchmark: $(M3_BENCH) | $(RESULTS_DIR)
-	./$(M3_BENCH) data/FAST-Coefficients.txt $(RESULTS_DIR)/m3_benchmark_results.csv 10
+m3-benchmark: $(M3_BENCH) $(M3_BENCH_SCALAR) | $(RESULTS_DIR)
+	./$(M3_BENCH_SCALAR) data/FAST-Coefficients.txt $(RESULTS_DIR)/m3_benchmark_scalar.csv 10
+	./$(M3_BENCH) data/FAST-Coefficients.txt $(RESULTS_DIR)/m3_benchmark_simd.csv 10
 
-m3-simd-benchmark: $(M3_SIMD_BENCH) | $(RESULTS_DIR)
-	./$(M3_SIMD_BENCH) $(RESULTS_DIR)/m3_simd_benchmark_results.csv
+m3-benchmark-remainder: $(M3_BENCH) | $(RESULTS_DIR)
+	./$(M3_BENCH) data/FAST-Coefficients.txt $(RESULTS_DIR)/m3_benchmark_simd_parallel_remainder.csv 10 parallel
+
+m3-plots: scripts/plot_milestone3.py $(RESULTS_DIR)/m3_benchmark_scalar.csv $(RESULTS_DIR)/m3_benchmark_simd.csv $(RESULTS_DIR)/m3_benchmark_simd_parallel_remainder.csv
+	$(PYTHON) scripts/plot_milestone3.py --results-dir $(RESULTS_DIR) --output-dir $(RESULTS_DIR)/milestone3
 
 m3-test: $(TEST_M3)
 	./$(TEST_M3)
@@ -118,4 +122,4 @@ test: $(TEST_GF) $(TEST_SD) $(TEST_COEFF) $(TEST_PPM) $(TEST_M3)
 clean:
 	rm -rf $(BUILD_DIR)
 
-.PHONY: all run sweep benchmark ppm-sweep ppm-benchmark m3-sweep m3-benchmark m3-simd-benchmark plots ppm-test m3-test test clean
+.PHONY: all run sweep benchmark ppm-sweep ppm-benchmark m3-sweep m3-benchmark m3-benchmark-remainder m3-plots plots ppm-test m3-test test clean

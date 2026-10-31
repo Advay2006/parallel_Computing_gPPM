@@ -36,8 +36,9 @@ make ppm-sweep     # full PPM grid; writes results/ppm_sweep_results.csv
 make ppm-benchmark # baseline vs PPM T=1,2,4,8 scaling
 make m3-test       # M3 cost-selector and SIMD correctness tests
 make m3-sweep      # M3 full-grid cost-selector validation
-make m3-benchmark  # compare serial vs parallel remainder at T=4,8
-make m3-simd-benchmark # compare scalar and SIMD region arithmetic
+make m3-benchmark  # compare final cost-selected PPM with SIMD on/off
+make m3-benchmark-remainder # add the separate parallel-remainder layer
+make m3-plots      # run scripts/plot_milestone3.py; output in results/milestone3/
 make plots         # presentation-ready PNG and SVG charts in results/plots/
 make clean
 ```
