@@ -1,4 +1,4 @@
-# gPPM — Milestones 1-2: Sequential Baseline and OpenMP PPM
+# gPPM — Milestones 1-3: Sequential Baseline, PPM, and Cost Selection
 
 Reference implementation of the traditional sequential erasure-code baseline
 and the Partitioned and Parallel Matrix (PPM) decoder described in Sections
@@ -12,8 +12,9 @@ and the Partitioned and Parallel Matrix (PPM) decoder described in Sections
 `ec_recover()` remains the **single-threaded, no-SIMD, normal-sequence-only**
 baseline. Milestone 2 adds an SD-specific PPM path that partitions independent
 failure groups, recovers them with OpenMP and a fixed matrix-first sequence,
-then recovers the dependent remainder with the normal sequence. Dynamic gPPM
-selection and SIMD remain later work.
+then recovers the dependent remainder with the normal sequence. Milestone 3
+contains a separate cost-selected gPPM path and SIMD region kernels for the
+supported fields.
 
 Project plan and milestone breakdown: [`Context.md`](Context.md).
 Standalone Milestone 1 report: [`Milestone_1_Report.pdf`](docs/Milestone_1_Report.pdf).
@@ -33,6 +34,10 @@ make benchmark # 32 MiB baseline suite; writes results/benchmark_results.csv
 make ppm-test      # focused partitioning/OpenMP/Figure 3 tests
 make ppm-sweep     # full PPM grid; writes results/ppm_sweep_results.csv
 make ppm-benchmark # baseline vs PPM T=1,2,4,8 scaling
+make m3-test       # M3 cost-selector and SIMD correctness tests
+make m3-sweep      # M3 full-grid cost-selector validation
+make m3-benchmark  # compare serial vs parallel remainder at T=4,8
+make m3-simd-benchmark # compare scalar and SIMD region arithmetic
 make plots         # presentation-ready PNG and SVG charts in results/plots/
 make clean
 ```
@@ -43,6 +48,7 @@ make clean
 |---|---|
 | `src/milestone1/` | Standalone Milestone 1 sequential source tree |
 | `src/milestone2/` | Standalone Milestone 2 PPM source tree, including its own core copies |
+| `src/milestone3/` | Standalone M3 cost-selected decoder and SIMD region arithmetic |
 | `tests/` | Unit and integration tests |
 | `data/` | Published FAST coefficient input |
 | `docs/` | PDF and DOCX project documents |

@@ -1,0 +1,4 @@
+field_width,region_bytes,calls_per_trial,total_bytes,scalar_ms,simd_ms,speedup,status
+8,131072,256,33554432,23.093177,1.209625,19.091x,PASS
+16,131072,256,33554432,16.862821,5.344445,3.155x,PASS
+32,131072,256,33554432,9.660691,8.200510,1.178x,PASS

@@ -4,12 +4,16 @@ OMPFLAGS ?= -fopenmp
 PYTHON  ?= python3
 M1_DIR  = src/milestone1
 M2_DIR  = src/milestone2
+M3_DIR  = src/milestone3
 M1_CORE = $(M1_DIR)/gf.c $(M1_DIR)/matrix.c $(M1_DIR)/sd_code.c $(M1_DIR)/codec.c
 M2_CORE = $(M2_DIR)/gf.c $(M2_DIR)/matrix.c $(M2_DIR)/sd_code.c $(M2_DIR)/codec.c $(M2_DIR)/ppm.c
+M3_CORE = $(M3_DIR)/gf.c $(M3_DIR)/matrix.c $(M3_DIR)/sd_code.c $(M3_DIR)/codec.c $(M3_DIR)/ppm.c
 M1_COEFF = $(M1_DIR)/coefficients.c
 M2_COEFF = $(M2_DIR)/coefficients.c
+M3_COEFF = $(M3_DIR)/coefficients.c
 M1_HEADERS = $(M1_DIR)/gf.h $(M1_DIR)/matrix.h $(M1_DIR)/sd_code.h $(M1_DIR)/codec.h $(M1_DIR)/coefficients.h
 M2_HEADERS = $(M2_DIR)/gf.h $(M2_DIR)/matrix.h $(M2_DIR)/sd_code.h $(M2_DIR)/codec.h $(M2_DIR)/ppm.h $(M2_DIR)/coefficients.h
+M3_HEADERS = $(M3_DIR)/gf.h $(M3_DIR)/matrix.h $(M3_DIR)/sd_code.h $(M3_DIR)/codec.h $(M3_DIR)/ppm.h $(M3_DIR)/coefficients.h
 BUILD_DIR = build
 RESULTS_DIR = results
 PLOTS_DIR = $(RESULTS_DIR)/plots
@@ -18,12 +22,16 @@ SWEEP   = $(BUILD_DIR)/sd_sweep
 BENCH   = $(BUILD_DIR)/sd_benchmark
 PPM_SWEEP = $(BUILD_DIR)/ppm_sweep
 PPM_BENCH = $(BUILD_DIR)/ppm_benchmark
+M3_SWEEP = $(BUILD_DIR)/m3_sweep
+M3_BENCH = $(BUILD_DIR)/m3_benchmark
+M3_SIMD_BENCH = $(BUILD_DIR)/m3_simd_benchmark
 TEST_GF = $(BUILD_DIR)/test_gf
 TEST_SD = $(BUILD_DIR)/test_sd
 TEST_COEFF = $(BUILD_DIR)/test_coefficients
 TEST_PPM = $(BUILD_DIR)/test_ppm
+TEST_M3 = $(BUILD_DIR)/test_m3
 
-all: $(BIN) $(SWEEP) $(BENCH) $(PPM_SWEEP) $(PPM_BENCH)
+all: $(BIN) $(SWEEP) $(BENCH) $(PPM_SWEEP) $(PPM_BENCH) $(M3_SWEEP) $(M3_BENCH)
 
 $(BUILD_DIR) $(RESULTS_DIR):
 	mkdir -p $@
@@ -43,6 +51,15 @@ $(PPM_SWEEP): $(M2_CORE) $(M2_COEFF) $(M2_DIR)/ppm_sweep.c $(M2_HEADERS) | $(BUI
 $(PPM_BENCH): $(M2_CORE) $(M2_COEFF) $(M2_DIR)/ppm_benchmark.c $(M2_HEADERS) | $(BUILD_DIR)
 	$(CC) -I$(M2_DIR) $(CFLAGS) $(OMPFLAGS) -o $@ $(M2_CORE) $(M2_COEFF) $(M2_DIR)/ppm_benchmark.c
 
+$(M3_SWEEP): $(M3_CORE) $(M3_COEFF) $(M3_DIR)/ppm_sweep.c $(M3_HEADERS) | $(BUILD_DIR)
+	$(CC) -I$(M3_DIR) $(CFLAGS) $(OMPFLAGS) -o $@ $(M3_CORE) $(M3_COEFF) $(M3_DIR)/ppm_sweep.c
+
+$(M3_BENCH): $(M3_CORE) $(M3_COEFF) $(M3_DIR)/ppm_benchmark.c $(M3_HEADERS) | $(BUILD_DIR)
+	$(CC) -I$(M3_DIR) $(CFLAGS) $(OMPFLAGS) -o $@ $(M3_CORE) $(M3_COEFF) $(M3_DIR)/ppm_benchmark.c
+
+$(M3_SIMD_BENCH): $(M3_DIR)/gf.c $(M3_DIR)/gf.h $(M3_DIR)/simd_benchmark.c | $(BUILD_DIR)
+	$(CC) -I$(M3_DIR) $(CFLAGS) -o $@ $(M3_DIR)/gf.c $(M3_DIR)/simd_benchmark.c
+
 $(TEST_GF): $(M1_DIR)/gf.c tests/test_gf.c $(M1_DIR)/gf.h | $(BUILD_DIR)
 	$(CC) -I$(M1_DIR) $(CFLAGS) -o $@ $(M1_DIR)/gf.c tests/test_gf.c
 
@@ -54,6 +71,9 @@ $(TEST_COEFF): $(M1_COEFF) tests/test_coefficients.c $(M1_DIR)/coefficients.h | 
 
 $(TEST_PPM): $(M2_CORE) $(M2_COEFF) tests/test_ppm.c $(M2_HEADERS) | $(BUILD_DIR)
 	$(CC) -I$(M2_DIR) $(CFLAGS) $(OMPFLAGS) -o $@ $(M2_CORE) $(M2_COEFF) tests/test_ppm.c
+
+$(TEST_M3): $(M3_CORE) $(M3_COEFF) tests/test_milestone3.c $(M3_HEADERS) | $(BUILD_DIR)
+	$(CC) -I$(M3_DIR) $(CFLAGS) $(OMPFLAGS) -o $@ $(M3_CORE) $(M3_COEFF) tests/test_milestone3.c
 
 run: $(BIN)
 	./$(BIN)
@@ -70,19 +90,32 @@ ppm-sweep: $(PPM_SWEEP) | $(RESULTS_DIR)
 ppm-benchmark: $(PPM_BENCH) | $(RESULTS_DIR)
 	./$(PPM_BENCH) data/FAST-Coefficients.txt $(RESULTS_DIR)/ppm_benchmark_results.csv 10
 
+m3-sweep: $(M3_SWEEP) | $(RESULTS_DIR)
+	./$(M3_SWEEP) data/FAST-Coefficients.txt $(RESULTS_DIR)/m3_sweep_results.csv
+
+m3-benchmark: $(M3_BENCH) | $(RESULTS_DIR)
+	./$(M3_BENCH) data/FAST-Coefficients.txt $(RESULTS_DIR)/m3_benchmark_results.csv 10
+
+m3-simd-benchmark: $(M3_SIMD_BENCH) | $(RESULTS_DIR)
+	./$(M3_SIMD_BENCH) $(RESULTS_DIR)/m3_simd_benchmark_results.csv
+
+m3-test: $(TEST_M3)
+	./$(TEST_M3)
+
 plots: scripts/plot_milestone2.py | $(RESULTS_DIR)
 	$(PYTHON) scripts/plot_milestone2.py --results-dir $(RESULTS_DIR) --output-dir $(PLOTS_DIR)
 
 ppm-test: $(TEST_PPM)
 	./$(TEST_PPM)
 
-test: $(TEST_GF) $(TEST_SD) $(TEST_COEFF) $(TEST_PPM)
+test: $(TEST_GF) $(TEST_SD) $(TEST_COEFF) $(TEST_PPM) $(TEST_M3)
 	./$(TEST_GF)
 	./$(TEST_SD)
 	./$(TEST_COEFF)
 	./$(TEST_PPM)
+	./$(TEST_M3)
 
 clean:
 	rm -rf $(BUILD_DIR)
 
-.PHONY: all run sweep benchmark ppm-sweep ppm-benchmark plots ppm-test test clean
+.PHONY: all run sweep benchmark ppm-sweep ppm-benchmark m3-sweep m3-benchmark m3-simd-benchmark plots ppm-test m3-test test clean
