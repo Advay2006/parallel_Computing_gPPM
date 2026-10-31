@@ -1,9 +1,9 @@
 # Milestone 3: Final Cost-Selected PPM With and Without SIMD
 
-This report compares the final M3 cost-selected PPM decoder with SIMD disabled
-and enabled. **Both benchmark variants keep the dependent remainder serial.**
-The separate byte-range-parallel remainder experiment is reported later and is
-not included in this SIMD comparison.
+This report measures three successive M3 changes on top of the scalar normal
+baseline: cost-selected PPM, SIMD, then parallel remainder. The scalar PPM layer
+and the first SIMD PPM layer both keep the remainder serial; the final layer
+enables remainder parallelism.
 
 The evaluation is organized as an optimization ladder:
 
@@ -34,12 +34,12 @@ benchmarked twice:
 - **SIMD M3:** normal M3 build; `mult_XORs()` dispatches to SSSE3/AVX2 when
   supported, otherwise falls back to scalar.
 
-Both builds use the same workload, benchmark code, thread counts (T=4 and T=8
-for independent groups), and **one thread for the dependent remainder**. Each
-build measures its own whole-matrix normal baseline as well as its selected gPPM
-path. This makes the reported PPM gain a comparison against the matching
-normal decoder, and the scalar-vs-SIMD comparison a comparison of the final
-gPPM decoder rather than an isolated arithmetic loop.
+The scalar run uses T=4/8 independent groups and a serial remainder. The SIMD run
+measures both serial and parallel remainder variants at T=4/8 in the same
+process, so L2 and L3 share the same SIMD cost calibration. Both CSVs record a
+whole-matrix normal time; the layer table and plots use the scalar normal time
+as the common L0 baseline. The scalar-vs-SIMD comparison is therefore an
+end-to-end decoder comparison, not an isolated arithmetic-loop comparison.
 
 ## 2. What M3 selects and where
 
@@ -76,9 +76,9 @@ The benchmark calibrated these `c` values independently for each build:
 
 | Field | Scalar build `c` | SIMD build `c` |
 |---|---:|---:|
-| GF(2^8) | 1.4010 | 0.8750 |
-| GF(2^16) | 0.8223 | 6.6415 |
-| GF(2^32) | 0.0000 | 7.5849 |
+| GF(2^8) | 1.3264 | 0.1625 |
+| GF(2^16) | 1.1222 | 6.2941 |
+| GF(2^32) | 0.0000 | 7.0000 |
 
 The values are specific to this CPU and arithmetic implementation. In
 particular, scalar GF(2^32) measured coefficient-two multiply-XOR no slower than
@@ -106,57 +106,53 @@ The kernels in [`src/milestone3/gf.c`](../src/milestone3/gf.c) work as follows:
 
 The build without `M3_DISABLE_SIMD` runtime-dispatches to these kernels when
 supported. `make m3-benchmark` builds both M3 variants from the same source;
-the scalar binary uses `-DM3_DISABLE_SIMD`. Each runs 10 trials per
-configuration for a 32 MiB stripe at T=4 and T=8. Both use the cost selector and
-keep the remainder serial.
+the scalar binary uses `-DM3_DISABLE_SIMD`. The scalar run has a serial
+remainder; the SIMD run measures both serial and parallel remainder. All runs use
+10 trials per configuration, a 32 MiB stripe, and T=4/8 independent groups.
 
-Platform: Intel Core Ultra 9 185H, GCC 11.4.0, `-O2 -fopenmp`. The following
-table reports median recovery times in milliseconds and PPM speedup over the
-matching build's whole-matrix normal decoder. The final column is the scalar
-gPPM time divided by the SIMD gPPM time at T=8.
+Platform: Intel Core Ultra 9 185H, GCC 11.4.0, `-O2 -fopenmp`. The table reports
+median recovery times in milliseconds at T=8. All cumulative speedups use the
+same L0 scalar-normal baseline.
 
-| m | s | Field | Normal scalar | gPPM scalar T=8 | PPM gain scalar | Normal SIMD | gPPM SIMD T=8 | PPM gain SIMD | SIMD gain on gPPM |
-|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|
-| 1 | 1 | GF(2^8) | 36.167 | 29.762 | 1.22× | 4.716 | 3.464 | 1.36× | 8.59× |
-| 1 | 2 | GF(2^16) | 55.263 | 49.234 | 1.12× | 18.529 | 17.241 | 1.07× | 2.86× |
-| 1 | 3 | GF(2^32) | 43.994 | 37.786 | 1.16× | 36.252 | 34.292 | 1.06× | 1.10× |
-| 2 | 1 | GF(2^8) | 66.675 | 41.453 | 1.61× | 7.774 | 4.653 | 1.67× | 8.91× |
-| 2 | 2 | GF(2^16) | 83.878 | 59.592 | 1.41× | 27.589 | 21.339 | 1.29× | 2.79× |
-| 2 | 3 | GF(2^32) | 57.644 | 41.276 | 1.40× | 50.156 | 40.818 | 1.23× | 1.01× |
-| 3 | 1 | GF(2^8) | 104.658 | 46.142 | 2.27× | 11.103 | 5.013 | 2.21× | 9.20× |
-| 3 | 2 | GF(2^16) | 125.408 | 76.377 | 1.64× | 36.446 | 26.013 | 1.40× | 2.94× |
-| 3 | 3 | GF(2^32) | 76.143 | 45.720 | 1.67× | 66.410 | 52.010 | 1.28× | 0.88× |
+| m | s | Field | L0 baseline ms | L1 scalar gPPM ms | L1/L0 | L2 SIMD gPPM ms | L2/L0 | L2/L1 | L3 SIMD+parallel remainder ms | L3/L0 | L3/L2 |
+|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 1 | GF(2^8) | 37.117 | 30.355 | 1.22× | 3.620 | 10.25× | 8.39× | 1.824 | 20.35× | 1.98× |
+| 1 | 2 | GF(2^16) | 58.476 | 53.766 | 1.09× | 16.490 | 3.55× | 3.26× | 9.074 | 6.44× | 1.82× |
+| 1 | 3 | GF(2^32) | 49.676 | 40.971 | 1.21× | 32.778 | 1.52× | 1.25× | 28.298 | 1.76× | 1.16× |
+| 2 | 1 | GF(2^8) | 80.202 | 42.704 | 1.88× | 4.432 | 18.10× | 9.63× | 2.247 | 35.70× | 1.97× |
+| 2 | 2 | GF(2^16) | 108.199 | 64.262 | 1.68× | 21.281 | 5.08× | 3.02× | 13.155 | 8.23× | 1.62× |
+| 2 | 3 | GF(2^32) | 65.577 | 46.875 | 1.40× | 40.838 | 1.61× | 1.15× | 33.214 | 1.97× | 1.23× |
+| 3 | 1 | GF(2^8) | 109.453 | 48.962 | 2.24× | 4.571 | 23.94× | 10.71× | 2.493 | 43.91× | 1.83× |
+| 3 | 2 | GF(2^16) | 134.078 | 75.863 | 1.77× | 26.667 | 5.03× | 2.84× | 17.240 | 7.78× | 1.55× |
+| 3 | 3 | GF(2^32) | 82.796 | 49.135 | 1.69× | 45.670 | 1.81× | 1.08× | 40.898 | 2.02× | 1.12× |
 
-The SIMD-backed final gPPM path is much faster for the GF(2^8) cases and faster
-for most GF(2^16) cases. For GF(2^32) at `(m,s)=(3,3)`, the T=8 SIMD gPPM time is
-about 14% slower than the scalar gPPM time; `(m,s)=(2,3)` is approximately even.
-The PPM gain over normal also differs by backend because SIMD changes the
-measured `c` and therefore can change which candidate the selector chooses.
-At T=8, cost-selected PPM gains over its matching normal decoder range from
-**1.12× to 2.27× without SIMD** and **1.06× to 2.21× with SIMD**. The complete
-SIMD gPPM decoder is 0.88×–9.20× the scalar gPPM time across the tested fields
-and configurations.
+At T=8, L1 adds **1.09×–2.24×** cumulative speedup over L0. Adding SIMD raises
+cumulative speedup to **1.52×–23.94×**; its incremental gain over L1 is
+**1.08×–10.71×**. Adding the parallel remainder raises cumulative speedup to
+**1.76×–43.91×**, an incremental **1.12×–1.98×** over L2. SIMD contributes most
+in GF(2^8); GF(2^32) gains are smaller. SIMD changes `c`, so the selector can
+choose a different strategy in L2 than in L1.
 
 Raw per-trial results are in [`m3_benchmark_scalar.csv`](m3_benchmark_scalar.csv)
-and [`m3_benchmark_simd.csv`](m3_benchmark_simd.csv). Both builds passed all
-**270/270** trials with byte equality, checksum, and syndrome validation.
+and [`m3_benchmark_simd_layers.csv`](m3_benchmark_simd_layers.csv). All **270**
+scalar-build trials and **450** SIMD-build trials passed byte equality,
+checksum, and syndrome validation.
 
-## 4. Separate remainder-parallelism experiment
+## 4. Layer L3: parallel remainder
 
-This experiment is **not part of the scalar-vs-SIMD comparison above**. It
-measures the additional byte-range parallel remainder change while the
-independent-group phase uses the same thread count. `ec_decode_normal_parallel()`
+This is the additional optimization after L2. It measures byte-range
+parallelism in the dependent remainder while the independent-group phase uses
+the same thread count. `ec_decode_normal_parallel()`
 in `src/milestone3/codec.c` assigns symbol-aligned byte ranges to OpenMP workers.
 Each worker computes its own range of `T = S·BS` and then its range of
 `BF = F^-1·T`, writing disjoint bytes in the shared `T` buffer and stripe. The
 logical operation counter still counts one full-region operation, not one per
 chunk.
 
-In the separate 32 MiB, 10-trial experiment, T=4 improved eight of nine
-configurations; `(m,s)=(3,1)` was about 6% slower. At T=8, all nine improved.
-The detailed serial-versus-parallel remainder table and methods are in
-[`m3_remainder_benchmark_results.csv`](m3_remainder_benchmark_results.csv),
-with summary plots below.
+In the 32 MiB, 10-trial experiment, T=4 improved eight of nine configurations;
+`(m,s)=(3,1)` was about 6% slower. At T=8, all nine improved. The serial and
+parallel remainder variants are both in
+[`m3_benchmark_simd_layers.csv`](m3_benchmark_simd_layers.csv).
 
 ## 5. Correctness, plots, and remaining work
 
@@ -164,7 +160,8 @@ with summary plots below.
   equality for all supported fields.
 - `make m3-sweep`: **7,833/7,833** feasible published SD points pass; 105 points
   are infeasible. See [`m3_sweep_results.csv`](m3_sweep_results.csv).
-- `make m3-benchmark`: scalar and SIMD builds each pass **270/270** trials.
+- `make m3-benchmark`: scalar build passes **270/270** trials; SIMD build passes
+  **450/450** trials across serial/parallel remainder variants.
 - `make m3-plots`: generates the PNG and SVG plots in
   [`milestone3/`](milestone3/).
 
@@ -172,8 +169,6 @@ No CUDA backend has been implemented. The M2 report's OpenMP/GPU rationale,
 thread-count discussion, plateau analysis, and M1 memory estimates should be
 carried into the final paper; related work still needs to be synthesized there.
 
-![PPM gain with SIMD disabled and enabled](milestone3/m3_gppm_speedup_scalar_vs_simd.png)
+![Cumulative speedup for each M3 layer](milestone3/m3_cumulative_speedup.png)
 
-![End-to-end SIMD gain on gPPM](milestone3/m3_final_simd_gain.png)
-
-![Separate parallel-remainder experiment](milestone3/m3_remainder_gain.png)
+![Incremental gain added by each M3 layer](milestone3/m3_incremental_speedup.png)

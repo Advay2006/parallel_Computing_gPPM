@@ -95,12 +95,9 @@ m3-sweep: $(M3_SWEEP) | $(RESULTS_DIR)
 
 m3-benchmark: $(M3_BENCH) $(M3_BENCH_SCALAR) | $(RESULTS_DIR)
 	./$(M3_BENCH_SCALAR) data/FAST-Coefficients.txt $(RESULTS_DIR)/m3_benchmark_scalar.csv 10
-	./$(M3_BENCH) data/FAST-Coefficients.txt $(RESULTS_DIR)/m3_benchmark_simd.csv 10
+	./$(M3_BENCH) data/FAST-Coefficients.txt $(RESULTS_DIR)/m3_benchmark_simd_layers.csv 10 compare
 
-m3-benchmark-remainder: $(M3_BENCH) | $(RESULTS_DIR)
-	./$(M3_BENCH) data/FAST-Coefficients.txt $(RESULTS_DIR)/m3_benchmark_simd_parallel_remainder.csv 10 parallel
-
-m3-plots: scripts/plot_milestone3.py $(RESULTS_DIR)/m3_benchmark_scalar.csv $(RESULTS_DIR)/m3_benchmark_simd.csv $(RESULTS_DIR)/m3_benchmark_simd_parallel_remainder.csv
+m3-plots: scripts/plot_milestone3.py $(RESULTS_DIR)/m3_benchmark_scalar.csv $(RESULTS_DIR)/m3_benchmark_simd_layers.csv
 	$(PYTHON) scripts/plot_milestone3.py --results-dir $(RESULTS_DIR) --output-dir $(RESULTS_DIR)/milestone3
 
 m3-test: $(TEST_M3)
@@ -122,4 +119,4 @@ test: $(TEST_GF) $(TEST_SD) $(TEST_COEFF) $(TEST_PPM) $(TEST_M3)
 clean:
 	rm -rf $(BUILD_DIR)
 
-.PHONY: all run sweep benchmark ppm-sweep ppm-benchmark m3-sweep m3-benchmark m3-benchmark-remainder m3-plots plots ppm-test m3-test test clean
+.PHONY: all run sweep benchmark ppm-sweep ppm-benchmark m3-sweep m3-benchmark m3-plots plots ppm-test m3-test test clean

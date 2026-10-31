@@ -280,7 +280,7 @@ static int write_results(FILE *csv, const char *implementation,
 
 static int benchmark_config(FILE *csv, const sd_coeff_entry *entry,
                             const gf_t *gf, int trials,
-                            int parallel_remainder)
+                            int remainder_mode)
 {
     static const int thread_counts[] = { 4, 8 };
     sd_code_t code = {
@@ -342,28 +342,33 @@ static int benchmark_config(FILE *csv, const sd_coeff_entry *entry,
            code.m, code.s, code.w, baseline_median);
     for (t = 0; t < (int)(sizeof thread_counts / sizeof thread_counts[0]); t++) {
         int requested = thread_counts[t];
-        int remainder_threads = parallel_remainder ? requested : 1;
-        double gppm_median;
+        int modes = remainder_mode == 2 ? 2 : 1;
+        int mode;
 
-        if (run_warmup(1, &code, &H, faulty, nf, stripe, golden, STRIPE_BYTES,
-                       sector_bytes, gf, requested, remainder_threads,
-                       golden_checksum,
-                       &ppm_count) != 0 ||
-            run_trials(1, &code, &H, faulty, nf, stripe, golden, STRIPE_BYTES,
-                       sector_bytes, gf, requested, remainder_threads, trials,
-                       golden_checksum,
-                       ppm_count, results) != 0)
-            goto done;
-        gppm_median = median_time(results, trials, scratch);
-        if (write_results(csv, parallel_remainder
-                                  ? "gppm_parallel_remainder"
-                                  : "gppm_serial_remainder",
-                          &code, STRIPE_BYTES,
-                          data_bytes, sector_bytes, results, trials,
-                          baseline_count, baseline_median) != 0)
-            goto done;
-        printf("  gPPM-T%d %.2fx vs normal", requested,
-               baseline_median / gppm_median);
+        for (mode = 0; mode < modes; mode++) {
+            int parallel = remainder_mode == 1 || (remainder_mode == 2 && mode == 1);
+            int remainder_threads = parallel ? requested : 1;
+            double gppm_median;
+            const char *label = parallel ? "gppm_parallel_remainder"
+                                         : "gppm_serial_remainder";
+
+            if (run_warmup(1, &code, &H, faulty, nf, stripe, golden,
+                           STRIPE_BYTES, sector_bytes, gf, requested,
+                           remainder_threads, golden_checksum, &ppm_count) != 0 ||
+                run_trials(1, &code, &H, faulty, nf, stripe, golden,
+                           STRIPE_BYTES, sector_bytes, gf, requested,
+                           remainder_threads, trials, golden_checksum,
+                           ppm_count, results) != 0)
+                goto done;
+            gppm_median = median_time(results, trials, scratch);
+            if (write_results(csv, label, &code, STRIPE_BYTES, data_bytes,
+                              sector_bytes, results, trials, baseline_count,
+                              baseline_median) != 0)
+                goto done;
+            printf("  gPPM-T%d %s remainder %.2fx vs normal", requested,
+                   parallel ? "parallel" : "serial",
+                   baseline_median / gppm_median);
+        }
     }
     putchar('\n');
     rc = 0;
@@ -382,17 +387,18 @@ int main(int argc, char **argv)
     sd_coeff_table table = { 0 };
     gf_t gf8 = { 0 }, gf16 = { 0 }, gf32 = { 0 };
     FILE *csv = NULL;
-    int m, s, status = 2, parallel_remainder = 0;
+    int m, s, status = 2, remainder_mode = 0;
 
     if (argc > 5 || (argc > 3 && parse_trials(argv[3], &trials) != 0) ||
         (argc > 4 && strcmp(argv[4], "serial") != 0 &&
-         strcmp(argv[4], "parallel") != 0)) {
-        fprintf(stderr, "usage: %s [coefficients] [csv-output] [trials] [serial|parallel]\n",
+         strcmp(argv[4], "parallel") != 0 && strcmp(argv[4], "compare") != 0)) {
+        fprintf(stderr, "usage: %s [coefficients] [csv-output] [trials] [serial|parallel|compare]\n",
                 argv[0]);
         return 2;
     }
-    if (argc > 4 && strcmp(argv[4], "parallel") == 0)
-        parallel_remainder = 1;
+    if (argc > 4)
+        remainder_mode = strcmp(argv[4], "parallel") == 0 ? 1 :
+                         strcmp(argv[4], "compare") == 0 ? 2 : 0;
     if (strcmp(csv_path, DEFAULT_CSV) == 0 &&
         mkdir("results", 0777) != 0 && errno != EEXIST) {
         fprintf(stderr, "cannot create results directory\n");
@@ -420,7 +426,8 @@ int main(int argc, char **argv)
         goto done;
 
     printf("M3 cost-selected decode: 32 MiB codeword, %s remainder, T=4/8, %d trials\n",
-           parallel_remainder ? "parallel" : "serial", trials);
+           remainder_mode == 2 ? "serial and parallel" :
+           remainder_mode == 1 ? "parallel" : "serial", trials);
     printf("Calibrated c: GF(2^8)=%.4f GF(2^16)=%.4f GF(2^32)=%.4f\n",
            gf_cost_c(&gf8), gf_cost_c(&gf16), gf_cost_c(&gf32));
     for (m = 1; m <= 3; m++)
@@ -435,7 +442,7 @@ int main(int argc, char **argv)
                 goto done;
             }
             gf = entry->w == 8 ? &gf8 : entry->w == 16 ? &gf16 : &gf32;
-            if (benchmark_config(csv, entry, gf, trials, parallel_remainder) != 0)
+            if (benchmark_config(csv, entry, gf, trials, remainder_mode) != 0)
                 goto done;
         }
     if (ferror(csv) || fclose(csv) != 0) {
@@ -444,7 +451,8 @@ int main(int argc, char **argv)
         goto done;
     }
     csv = NULL;
-    printf("All %d measured decode trials passed validation.\n", 9 * 3 * trials);
+    printf("All %d measured decode trials passed validation.\n",
+           9 * (1 + 2 * (remainder_mode == 2 ? 2 : 1)) * trials);
     printf("Raw results: %s\n", csv_path);
     status = 0;
 

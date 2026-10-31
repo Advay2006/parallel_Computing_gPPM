@@ -132,8 +132,7 @@ def main():
 
     paths = {
         "scalar": args.results_dir / "m3_benchmark_scalar.csv",
-        "simd": args.results_dir / "m3_benchmark_simd.csv",
-        "simd_parallel": args.results_dir / "m3_benchmark_simd_parallel_remainder.csv",
+        "simd_layers": args.results_dir / "m3_benchmark_simd_layers.csv",
     }
     for path in paths.values():
         if not path.is_file():
@@ -158,8 +157,8 @@ def main():
         }
     )
     scalar = summarize(read_csv(paths["scalar"]))
-    simd = summarize(read_csv(paths["simd"]))
-    simd_parallel = summarize(read_csv(paths["simd_parallel"]))
+    simd = summarize(read_csv(paths["simd_layers"]))
+    simd_parallel = simd
     source_names = ", ".join(path.name for path in paths.values())
     outputs = []
     outputs.extend(plot_cumulative(scalar, simd, simd_parallel,
