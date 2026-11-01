@@ -76,18 +76,19 @@ def plot_cumulative(scalar, simd, simd_parallel, output_dir, source_names):
             for i, value in enumerate(cumulative):
                 values_by_layer[i].append(value)
         for name, values in zip(layer_names, values_by_layer):
-            ax.plot(labels, values, marker="o", linewidth=2.0,
+            ax.plot(labels, values, marker="o", linewidth=2.5, markersize=6,
                     color=LAYER_COLORS[name], label=name)
         ax.axhline(1.0, color="#30343B", linewidth=1, linestyle="--")
         ax.set_title(f"T={threads}", fontweight="bold")
         ax.set_xlabel("Failure configuration (m / s)")
         ax.tick_params(axis="x", rotation=35)
-        ax.legend(fontsize=8)
+        ax.legend(fontsize=12)
+        ax.tick_params(axis="both", labelsize=12)
 
     axes[0].set_ylabel("Cumulative speedup vs scalar normal baseline")
-    fig.suptitle("Cumulative M3 Optimization Layers", fontsize=16, fontweight="bold")
+    fig.suptitle("Cumulative M3 Optimization Layers", fontsize=20, fontweight="bold")
     fig.text(0.995, 0.005, f"Sources: {source_names}", ha="right", va="bottom",
-             fontsize=8, color="#667085")
+             fontsize=10, color="#667085")
     fig.tight_layout(rect=(0, 0.05, 1, 0.92))
     return save_figure(fig, output_dir, "m3_cumulative_speedup")
 
@@ -113,12 +114,13 @@ def plot_incremental(scalar, simd, simd_parallel, output_dir, source_names):
         ax.set_title(f"T={threads}", fontweight="bold")
         ax.set_xticks(positions, labels, rotation=35, ha="right")
         ax.set_xlabel("Failure configuration (m / s)")
-        ax.legend(fontsize=8)
+        ax.legend(fontsize=12)
+        ax.tick_params(axis="both", labelsize=12)
 
     axes[0].set_ylabel("Incremental speedup over previous layer")
-    fig.suptitle("Benefit Added at Each M3 Layer", fontsize=16, fontweight="bold")
+    fig.suptitle("Benefit Added at Each M3 Layer", fontsize=20, fontweight="bold")
     fig.text(0.995, 0.005, f"Sources: {source_names}", ha="right", va="bottom",
-             fontsize=8, color="#667085")
+             fontsize=10, color="#667085")
     fig.tight_layout(rect=(0, 0.05, 1, 0.92))
     return save_figure(fig, output_dir, "m3_incremental_speedup")
 
@@ -141,9 +143,9 @@ def main():
     plt.rcParams.update(
         {
             "font.family": "DejaVu Sans",
-            "font.size": 9,
-            "axes.titlesize": 12,
-            "axes.labelsize": 10,
+            "font.size": 12,
+            "axes.titlesize": 16,
+            "axes.labelsize": 16,
             "axes.edgecolor": "#30343B",
             "axes.linewidth": 0.8,
             "axes.grid": True,

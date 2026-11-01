@@ -38,6 +38,9 @@ make m3-test       # M3 cost-selector and SIMD correctness tests
 make m3-sweep      # M3 full-grid cost-selector validation
 make m3-benchmark  # measure cumulative scalar-PPM, SIMD, and parallel-remainder layers
 make m3-plots      # run scripts/plot_milestone3.py; output in results/milestone3/
+make gpu-test      # CUDA correctness run (requires CUDA toolkit)
+make gpu-benchmark # GPU scalar/optimized vs CPU M3 comparison
+make gpu-plots     # GPU comparison plots in results/milestone_gpu/
 make plots         # presentation-ready PNG and SVG charts in results/plots/
 make clean
 ```
@@ -367,6 +370,20 @@ Median speedups from the current run are:
 `T=1` isolates algorithmic work reduction; higher thread counts add OpenMP
 parallelism. Full trial data, effective thread counts, throughput, speedup, and
 efficiency are in `results/ppm_benchmark_results.csv`.
+
+## Verified GPU checkpoint
+
+The isolated CUDA implementation under `src/milestone_gpu/` supports scalar and
+table-based recovery for GF(2^8/16/32), with host-side gPPM cost selection and
+batched matrix-vector kernels. `make gpu-test` includes focused CUDA tests and
+the 32 MiB smoke benchmark. `make gpu-benchmark` compares both GPU variants
+against optimized CPU M3 with eight OpenMP threads; timing includes transfers.
+Make discovers `nvcc` in PATH or `/usr/local/cuda*/bin/` (or set `NVCC` explicitly).
+
+On the RTX 4050/CUDA 13.0 run, all 270 timed trials pass. The table GPU variant
+beats CPU M3 by 1.32×–1.39× for the tested GF(2^32) cases; CPU M3 is faster for
+GF(2^8/16). Full methodology, correctness coverage, raw data and plots:
+[`results/milestone_gpu/GPU_Results.md`](results/milestone_gpu/GPU_Results.md).
 
 ## Presentation plots
 

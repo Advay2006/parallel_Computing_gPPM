@@ -165,9 +165,12 @@ parallel remainder variants are both in
 - `make m3-plots`: generates the PNG and SVG plots in
   [`milestone3/`](milestone3/).
 
-No CUDA backend has been implemented. The M2 report's OpenMP/GPU rationale,
-thread-count discussion, plateau analysis, and M1 memory estimates should be
-carried into the final paper; related work still needs to be synthesized there.
+The CUDA backend is implemented and measured as a separate source checkpoint;
+see [`milestone_gpu/GPU_Results.md`](milestone_gpu/GPU_Results.md) and
+[`docs/Milestone_GPU_Plan.md`](../docs/Milestone_GPU_Plan.md). The M2
+report's OpenMP/GPU rationale, thread-count discussion, plateau analysis, and M1
+memory estimates should be carried into the final paper; related work still needs
+to be synthesized there.
 
 ![Cumulative speedup for each M3 layer](milestone3/m3_cumulative_speedup.png)
 
