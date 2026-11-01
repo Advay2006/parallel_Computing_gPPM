@@ -1,0 +1,7 @@
+Command: /usr/local/cuda-13.0/bin/compute-sanitizer --tool memcheck --error-exitcode 1 ./build/test_gpu
+Validation rerun: 1 November 2026
+Exit status: 0
+
+========= COMPUTE-SANITIZER
+GPU tests passed: 12 direct/staged matvec checks and 64 SD recoveries.
+========= ERROR SUMMARY: 0 errors

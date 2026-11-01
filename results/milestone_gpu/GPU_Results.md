@@ -126,6 +126,7 @@ benchmark exercises every possible strategy choice.
   variants. They check exact original bytes and zero syndrome.
 - `compute-sanitizer --tool memcheck --error-exitcode 1 ./build/test_gpu`:
   **zero errors** with CUDA 13.0 Compute Sanitizer.
+  [Retained validation transcript](compute_sanitizer_memcheck.txt).
 - `make gpu-benchmark`: **270/270** timed trials pass byte equality, checksum,
   and zero syndrome. Logical operation counts are recorded and must stay equal
   to each variant's warm-up count. These GPU counts are host matrix-derived,
@@ -134,6 +135,11 @@ benchmark exercises every possible strategy choice.
 
 Coverage is not exhaustive over every SD configuration or fault placement.
 This GPU validation must not be confused with the CPU M3 7,833-point sweep.
+The CPU comparator is fixed at eight threads, not tuned for each workload.
+The CPU-layer data show faster four-thread results in six workloads. Since
+those are separate runs, a same-run CPU thread-count sweep is needed before
+claiming an advantage over the best CPU configuration. GPU scalar/table ratios
+also include any sequence changes caused by their different calibrated weights.
 
 ## Reproduction and artifacts
 
