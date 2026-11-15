@@ -18,7 +18,9 @@ The decoder builds the parity-check equations, separates failed sectors from sur
 and applies matrix operations over a finite field to reconstruct the missing data.
 In Milestone 2, we used the code structure to partition row-local failures into
 independent groups. OpenMP workers can recover those groups concurrently, after which
-the dependent remainder is solved. That is the hand-off to the new work: we keep
+the dependent remainder is solved. In the little example, one whole disk and one
+additional sector are missing: three rows are independent and the fourth depends
+on a stripe-wide equation. That is the hand-off to the new work: we keep
 the same recovery problem, but choose the computation more carefully and optimize
 how the arithmetic runs on CPUs and GPUs.
 

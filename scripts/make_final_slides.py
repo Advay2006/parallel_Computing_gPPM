@@ -9,7 +9,7 @@ import csv
 
 from pptx import Presentation
 from pptx.dml.color import RGBColor
-from pptx.enum.shapes import MSO_SHAPE
+from pptx.enum.shapes import MSO_CONNECTOR, MSO_SHAPE
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.util import Inches, Pt
 
@@ -70,6 +70,16 @@ def arrow(slide, x, y, w=.38, h=.25, fill=BLUE):
     s.fill.solid(); s.fill.fore_color.rgb = color(fill); s.line.fill.background()
     for effect in s._element.xpath("p:style/a:effectRef"):
         effect.set("idx", "0")
+
+def line(slide, x1, y1, x2, y2, fill=FAINT, width=1.5):
+    s = slide.shapes.add_connector(MSO_CONNECTOR.STRAIGHT, Inches(x1), Inches(y1), Inches(x2), Inches(y2))
+    s.line.color.rgb = color(fill); s.line.width = Pt(width)
+    return s
+
+def dot(slide, x, y, size, fill):
+    s = slide.shapes.add_shape(MSO_SHAPE.OVAL, Inches(x-size/2), Inches(y-size/2), Inches(size), Inches(size))
+    s.fill.solid(); s.fill.fore_color.rgb = color(fill); s.line.fill.background()
+    return s
 
 def base(section, title, subtitle=None, source=None):
     slide = prs.slides.add_slide(BLANK)
@@ -140,15 +150,28 @@ arrow(s, 9.06, 3.22, .47, .28)
 shape(s, 9.68, 2.13, 2.92, 2.70, PALE_ORANGE, rounded=True)
 text(s, "WHAT COMES NEXT", 9.91, 2.34, 2.46, .25, 11, ORANGE, True)
 text(s, "Less work.\nFaster kernels.\nGPU offload.", 9.91, 2.83, 2.45, 1.35, 20, NAVY, True)
-text(s, "The dependency between groups and remainder still determines the schedule.",
-     .78, 5.52, 11.75, .48, 18, SLATE)
+text(s, "EXAMPLE FAILURE PATTERN", .83, 5.08, 2.5, .22, 10, SLATE, True)
+for disk in range(4):
+    text(s, f"D{disk+1}", .98 + disk*.36, 5.34, .31, .18, 9, SLATE, align="center")
+    for row in range(4):
+        failed = disk == 1 or (row == 3 and disk == 3)
+        shape(s, .98 + disk*.36, 5.57 + row*.27, .29, .20, ORANGE if failed else LIGHT)
+arrow(s, 2.65, 5.92, .40, .26)
+shape(s, 3.28, 5.53, 3.33, .47, PALE_TEAL, rounded=True)
+text(s, "3 independent row groups", 3.44, 5.61, 3.01, .28, 14, TEAL, True, align="center")
+shape(s, 3.28, 6.12, 3.33, .47, PALE_ORANGE, rounded=True)
+text(s, "1 dependent remainder", 3.44, 6.20, 3.01, .28, 14, ORANGE, True, align="center")
+text(s, "Rows with only a disk loss can be solved first;\nthe extra sector makes the final row dependent.",
+     7.12, 5.58, 5.30, .91, 16, SLATE)
 note(s, "A quick recap", """
 In Milestone 1, we implemented the sequential Sector–Disk recovery baseline.
 The decoder builds the parity-check equations, separates failed sectors from survivors,
 and applies matrix operations over a finite field to reconstruct the missing data.
 In Milestone 2, we used the code structure to partition row-local failures into
 independent groups. OpenMP workers can recover those groups concurrently, after which
-the dependent remainder is solved. That is the hand-off to the new work: we keep
+the dependent remainder is solved. In the little example, one whole disk and one
+additional sector are missing: three rows are independent and the fourth depends
+on a stripe-wide equation. That is the hand-off to the new work: we keep
 the same recovery problem, but choose the computation more carefully and optimize
 how the arithmetic runs on CPUs and GPUs.
 """)
@@ -194,12 +217,14 @@ for y, k, title, detail, tint, accent in [
     text(s, detail, 1.64, y+.46, 5.99, .25, 13, SLATE)
 shape(s, 8.30, 2.06, 4.23, 2.93, NAVY, rounded=True)
 text(s, "EXAMPLE: GF(2⁸)", 8.61, 2.34, 3.6, .27, 12, "9EDADE", True)
-text(s, "1.53×", 8.61, 2.91, 1.42, .35, 20, WHITE, True)
-text(s, "cost selection", 10.04, 2.94, 2.12, .29, 14, "D6E4ED")
-text(s, "15.06×", 8.61, 3.48, 1.42, .35, 20, WHITE, True)
-text(s, "+ SIMD", 10.04, 3.51, 2.12, .29, 14, "D6E4ED")
-text(s, "25.42×", 8.61, 4.05, 1.42, .35, 20, WHITE, True)
-text(s, "+ remainder", 10.04, 4.08, 2.12, .29, 14, "D6E4ED")
+for i, (label, gain, bar_color) in enumerate((("SELECT", 1.53, "86B1D0"),
+                                               ("+ SIMD", 15.06, "67C5C4"),
+                                               ("+ REM.", 25.42, "EAA985"))):
+    y = 2.97 + i*.58
+    text(s, label, 8.58, y-.02, .92, .30, 11, "D6E4ED", True)
+    shape(s, 9.55, y+.02, 2.02, .23, "43566A", rounded=True)
+    shape(s, 9.55, y+.02, 2.02*gain/27, .23, bar_color, rounded=True)
+    text(s, f"{gain:.2f}×", 11.68, y-.02, .68, .30, 12, WHITE, True, align="right")
 text(s, "The full nine-workload range at T=8 is 1.69×–34.85×.",
      .82, 5.59, 11.5, .42, 18, SLATE)
 note(s, "Three layers of CPU optimization", """
@@ -330,21 +355,29 @@ the number of extra sector failures also change together in these workloads.
 s = base("Milestone 4  /  size scaling", "The winner changes as the stripe grows",
          "GF(2³²), m=2, s=3  ·  Best tested CPU vs GPU table  ·  median latency",
          "Final experiment  ·  separate runs in fixed 32 → 8 → 128 MiB order")
-for i, size in enumerate((8, 32, 128)):
-    row = result(size, 2, 3); x = .82 + i*4.13
-    cpu, gpu = float(row["best_cpu_ms"]), float(row["gpu_table_ms"])
-    shape(s, x, 2.16, 3.78, 3.24, BG, rounded=True, stroke=FAINT)
-    text(s, f"{size} MiB", x+.24, 2.40, 3.30, .42, 23, NAVY, True)
-    text(s, "Best CPU", x+.24, 3.02, 1.75, .29, 15, BLUE, True)
-    text(s, f"{cpu:.2f} ms", x+1.94, 2.98, 1.57, .37, 17, BLUE, True, align="right")
-    text(s, "GPU table", x+.24, 3.53, 1.75, .29, 15, TEAL, True)
-    text(s, f"{gpu:.2f} ms", x+1.94, 3.49, 1.57, .37, 17, TEAL, True, align="right")
-    gain = cpu/gpu
-    label = f"GPU {gain:.2f}× faster" if gain > 1 else f"CPU {1/gain:.2f}× faster"
-    shape(s, x+.24, 4.28, 3.28, .63, PALE_TEAL if gain > 1 else PALE_ORANGE, rounded=True)
-    text(s, label, x+.34, 4.38, 3.08, .38, 16, TEAL if gain > 1 else ORANGE, True, align="center")
-text(s, "Useful observation—not a universal crossover: run order, calibration and system state also vary.",
-     .84, 5.94, 11.65, .55, 16, SLATE)
+text(s, "Latency (ms)", .89, 2.05, 1.55, .28, 13, SLATE, True)
+shape(s, 8.54, 2.06, .20, .20, BLUE); text(s, "Best CPU", 8.85, 2.00, 1.35, .30, 14, BLUE, True)
+shape(s, 10.27, 2.06, .20, .20, TEAL); text(s, "GPU table", 10.58, 2.00, 1.65, .30, 14, TEAL, True)
+xs = (3.14, 6.54, 9.94)
+top, bottom, max_ms = 2.49, 5.48, 100.0
+for tick in (0, 20, 40, 60, 80, 100):
+    y = bottom - tick/max_ms*(bottom-top)
+    line(s, 1.65, y, 11.20, y, "E3EAF0", .7)
+    text(s, str(tick), .94, y-.12, .51, .24, 11, SLATE, align="right")
+for x, size in zip(xs, (8, 32, 128)):
+    text(s, f"{size} MiB", x-.60, 5.62, 1.20, .30, 15, NAVY, True, align="center")
+for field, hue in (("best_cpu_ms", BLUE), ("gpu_table_ms", TEAL)):
+    values = [float(result(size, 2, 3)[field]) for size in (8,32,128)]
+    points = [(x, bottom-v/max_ms*(bottom-top)) for x,v in zip(xs,values)]
+    for (x1,y1),(x2,y2) in zip(points,points[1:]):
+        line(s, x1,y1,x2,y2,hue,3)
+    for i, ((x,y),v) in enumerate(zip(points,values)):
+        dot(s, x,y,.16,hue)
+        yy = y-.43 if field == "best_cpu_ms" else y+.12
+        if i == 2 and field == "gpu_table_ms": yy = y-.41
+        text(s, f"{v:.2f}", x+.14, yy, .98, .28, 13, hue, True)
+text(s, "Log-spaced sizes; lines guide the eye. One session—no universal crossover established.",
+     .84, 6.42, 11.65, .38, 15, SLATE)
 note(s, "Stripe size changes the comparison", """
 The 32-bit-field example gives a useful counterpoint. At eight MiB, the GPU table
 variant takes 8.47 milliseconds compared with 21.88 for the best tested CPU.
@@ -365,15 +398,22 @@ shape(s, .82, 2.15, 5.67, 3.40, LIGHT, rounded=True)
 text(s, "CPU  /  INSTRUCTIONS", 1.09, 2.44, 5.1, .29, 12, BLUE, True)
 text(s, "58.2%", 1.08, 2.97, 2.15, .72, 38, NAVY, True)
 text(s, "in scalar GF(2³²) multiply", 3.05, 3.12, 3.04, .42, 16, SLATE)
-text(s, "Most comes from building coefficient tables inside the SIMD region kernel.",
-     1.09, 4.09, 4.97, .76, 17, NAVY)
+for x, label in ((1.10,"COEFFICIENT"), (2.84,"BUILD TABLE"), (4.58,"SIMD APPLY")):
+    shape(s, x, 4.04, 1.39, .50, WHITE, rounded=True)
+    text(s, label, x+.04, 4.14, 1.31, .27, 10, BLUE, True, align="center")
+for x in (2.54, 4.28): arrow(s, x, 4.20, .24, .18, BLUE)
+text(s, "Table construction repeats inside the region kernel.", 1.10, 4.79, 4.97, .40, 14, NAVY)
 shape(s, 6.82, 2.15, 5.67, 3.40, PALE_TEAL, rounded=True)
 text(s, "GPU  /  TRACE", 7.09, 2.44, 5.1, .29, 12, TEAL, True)
 text(s, "11.80 ms", 7.08, 2.95, 2.48, .55, 25, NAVY, True)
 text(s, "kernel timeline union", 9.52, 3.03, 2.60, .38, 15, SLATE)
 text(s, "10.12 ms", 7.08, 3.62, 2.48, .55, 25, NAVY, True)
 text(s, "summed copy intervals", 9.52, 3.70, 2.60, .38, 15, SLATE)
-text(s, "17 kernels  ·  52 copies  ·  repeated allocation", 7.09, 4.52, 4.93, .44, 15, NAVY)
+for x, label in ((7.10,"COPY"), (8.82,"KERNEL"), (10.54,"SYNC")):
+    shape(s, x, 4.31, 1.37, .48, WHITE, rounded=True)
+    text(s, label, x+.04, 4.41, 1.29, .26, 11, TEAL, True, align="center")
+for x in (8.51, 10.23): arrow(s, x, 4.46, .24, .17, TEAL)
+text(s, "17 kernels  ·  52 copies  ·  allocation per recovery", 7.09, 4.90, 4.93, .32, 13, NAVY)
 text(s, "Instruction shares ≠ elapsed-time shares. GPU kernel, copy and host-wait intervals can overlap.",
      .84, 5.98, 11.7, .50, 16, ORANGE)
 note(s, "Profiling and bottlenecks", """
