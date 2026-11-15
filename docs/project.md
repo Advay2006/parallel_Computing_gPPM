@@ -673,15 +673,10 @@ different costs. This affects both absolute throughput and scaling behavior.
 
 | File | Responsibility |
 |---|---|
-| `src/gf.c`, `src/gf.h` | GF arithmetic, `mult_XORs()`, thread-local counting |
-| `src/matrix.c`, `src/matrix.h` | Matrix allocation, inversion, multiplication, nonzero counts |
-| `src/sd_code.c`, `src/sd_code.h` | SD parity-check matrix and failure/parity layouts |
-| `src/codec.c`, `src/codec.h` | Split, normal decode, matrix-first decode, baseline recovery |
-| `src/ppm.c`, `src/ppm.h` | SD partitioning, OpenMP jobs, barrier, remainder recovery |
-| `src/sweep.c` | Full sequential correctness sweep |
-| `src/ppm_sweep.c` | Full PPM correctness and thread-invariance sweep |
-| `src/benchmark.c` | Sequential 32 MiB benchmark |
-| `src/ppm_benchmark.c` | Baseline-versus-PPM scaling benchmark |
+| `src/milestone1/` | Standalone Milestone 1 core, sequential decoder, sweep, and benchmark |
+| `src/milestone2/` | Standalone Milestone 2 core, PPM decoder, sweep, and benchmark |
+| `src/milestone2/ppm.c`, `src/milestone2/ppm.h` | SD partitioning, OpenMP jobs, barrier, remainder recovery |
+| `tests/test_ppm.c` | Figure 3, fields, threads, and invalid-input tests |
 | `tests/test_ppm.c` | Figure 3, fields, threads, and invalid-input tests |
 | `scripts/plot_milestone2.py` | Presentation plot generator |
 

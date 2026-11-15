@@ -1,0 +1,15 @@
+api,calls,total_ms
+cudaStreamSynchronize_v3020,47,23.429294
+cudaMemcpy_v3020,2,9.328446
+cudaFree_v3020,81,2.264997
+cudaMallocAsync_v11020,80,0.406208
+cudaEventRecord_v3020,64,0.240697
+cudaMalloc_v3020,1,0.229058
+cudaMemcpyAsync_v3020,64,0.173996
+cudaLaunchKernel_v7000,32,0.123093
+cudaStreamCreateWithFlags_v5000,16,0.044293
+cudaStreamDestroy_v5050,16,0.040214
+cudaEventCreate_v3020,64,0.023943
+cudaEventDestroy_v3020,64,0.021711
+cuProfilerStart,1,0.009666
+cuKernelGetName,32,0.002334

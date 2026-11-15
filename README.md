@@ -1,4 +1,4 @@
-# gPPM — Milestones 1-2: Sequential Baseline and OpenMP PPM
+# gPPM — CPU/GPU Recovery and Milestone 4 Evaluation
 
 Reference implementation of the traditional sequential erasure-code baseline
 and the Partitioned and Parallel Matrix (PPM) decoder described in Sections
@@ -12,10 +12,14 @@ and the Partitioned and Parallel Matrix (PPM) decoder described in Sections
 `ec_recover()` remains the **single-threaded, no-SIMD, normal-sequence-only**
 baseline. Milestone 2 adds an SD-specific PPM path that partitions independent
 failure groups, recovers them with OpenMP and a fixed matrix-first sequence,
-then recovers the dependent remainder with the normal sequence. Dynamic gPPM
-selection and SIMD remain later work.
+then recovers the dependent remainder with the normal sequence. Milestone 3
+contains a separate cost-selected gPPM path and SIMD region kernels for the
+supported fields.
 
 Project plan and milestone breakdown: [`Context.md`](Context.md).
+Final IEEE research paper: [`docs/Milestone3_IEEE/main.pdf`](docs/Milestone3_IEEE/main.pdf).
+Final profiling, scaling evidence and reproduction instructions:
+[`results/milestone4/README.md`](results/milestone4/README.md).
 Standalone Milestone 1 report: [`Milestone_1_Report.pdf`](docs/Milestone_1_Report.pdf).
 Original literature review with the validated baseline results appended:
 [`finalfi_with_baseline_results.pdf`](docs/finalfi_with_baseline_results.pdf).
@@ -33,6 +37,16 @@ make benchmark # 32 MiB baseline suite; writes results/benchmark_results.csv
 make ppm-test      # focused partitioning/OpenMP/Figure 3 tests
 make ppm-sweep     # full PPM grid; writes results/ppm_sweep_results.csv
 make ppm-benchmark # baseline vs PPM T=1,2,4,8 scaling
+make m3-test       # M3 cost-selector and SIMD correctness tests
+make m3-sweep      # M3 full-grid cost-selector validation
+make m3-benchmark  # measure cumulative scalar-PPM, SIMD, and parallel-remainder layers
+make m3-plots      # run scripts/plot_milestone3.py; output in results/milestone3/
+make gpu-test      # CUDA correctness run (requires CUDA toolkit)
+make gpu-benchmark # GPU scalar/optimized vs CPU M3 comparison
+make gpu-plots     # GPU comparison plots in results/milestone_gpu/
+make m4-benchmark  # final CPU/GPU and stripe-size benchmark (see M4 README first)
+make m4-profile    # recovery-only Callgrind and Nsight traces
+make m4-analyze    # validate M4 measurements and generate summaries/plots
 make plots         # presentation-ready PNG and SVG charts in results/plots/
 make clean
 ```
@@ -41,7 +55,9 @@ make clean
 
 | Path | Contents |
 |---|---|
-| `src/` | Baseline and PPM implementations and command-line programs |
+| `src/milestone1/` | Standalone Milestone 1 sequential source tree |
+| `src/milestone2/` | Standalone Milestone 2 PPM source tree, including its own core copies |
+| `src/milestone3/` | Standalone M3 cost-selected decoder and SIMD region arithmetic |
 | `tests/` | Unit and integration tests |
 | `data/` | Published FAST coefficient input |
 | `docs/` | PDF and DOCX project documents |
@@ -113,7 +129,9 @@ only on the ones above it.
 
 ## File reference
 
-### `src/gf.h` / `src/gf.c` — Galois Field arithmetic
+### `src/milestone1/gf.h` / `src/milestone1/gf.c` — Milestone 1 Galois Field arithmetic
+
+Milestone 2 has its own corresponding copy in `src/milestone2/`.
 
 The bottom layer. Everything else is built on it.
 
@@ -133,7 +151,10 @@ The bottom layer. Everything else is built on it.
 
 w=8, w=16, and w=32 cover all 3,969 published FAST SD configurations.
 
-### `src/matrix.h` / `src/matrix.c` — dense matrices over GF(2^w)
+### `src/milestone1/matrix.h` / `src/milestone1/matrix.c` — Milestone 1 dense matrices over GF(2^w)
+
+Milestone 2 has its own corresponding copy in `src/milestone2/`, with matrix
+multiplication used by PPM.
 
 * `gf_mat` — row-major `uint32_t` array plus dimensions. Access via the
   `MAT(M, i, j)` macro.
@@ -150,7 +171,9 @@ w=8, w=16, and w=32 cover all 3,969 published FAST SD configurations.
   PPM's fixed matrix-first sequence. It does not count toward region-operation
   metric `C`.
 
-### `src/sd_code.h` / `src/sd_code.c` — **Step 1**, the parity-check matrix
+### `src/milestone1/sd_code.h` / `src/milestone1/sd_code.c` — **Step 1**, the parity-check matrix
+
+Milestone 2 has a separate copy in `src/milestone2/`.
 
 `sd_code_t` carries the parameterisation `SD^{m,s}_{n,r}(w | a_0, …, a_{m+s-1})`.
 
@@ -173,7 +196,10 @@ per stripe row) is fixed by the paper's Algorithm 1, which addresses rows
 rightmost disks in full, plus the `s` highest-numbered sectors outside those
 disks. Extra parity may span multiple rows when `s > n-m`.
 
-### `src/codec.h` / `src/codec.c` — **Steps 2–4**, the codec
+### `src/milestone1/codec.h` / `src/milestone1/codec.c` — **Steps 2–4**, the sequential codec
+
+Milestone 2 has its own codec copy in `src/milestone2/`, which also provides
+matrix-first decoding for PPM.
 
 * **`ec_split`** (Step 2) — partitions `H` by column into `F` (faulty columns)
   and `S` (surviving columns), and reports the surviving column indices.
@@ -199,7 +225,7 @@ disks. Extra parity may span multiple rows when `s > n-m`.
 `decode_stats_t` reports `u(S)`, `u(F^-1)`, and the measured call count. The
 identity `mult_xors == u_S + u_Finv` should always hold.
 
-### `src/ppm.h` / `src/ppm.c` — Milestone 2 PPM
+### `src/milestone2/ppm.h` / `src/milestone2/ppm.c` — Milestone 2 PPM
 
 For each physical stripe row, PPM counts failed sectors. A row containing
 exactly `m` failures forms an independent group because its `m` row-local
@@ -212,7 +238,7 @@ The paper's Figure 3 example partitions `{2,6,10,13,14}` into three independent
 groups and a two-sector remainder. The implementation reproduces baseline
 `C=35` and PPM `C=29`.
 
-### `src/main.c` — the Figure 2 example
+### `src/milestone1/main.c` — the Figure 2 example
 
 Runs `SD^{1,1}_{4,4}(8 | 1, 2)` with 4 KiB sectors: builds and prints `H`,
 encodes random data, checks `H*B = 0`, saves a copy, wipes the faulty set
@@ -228,7 +254,10 @@ For this configuration it gives 35, and the measured count is 35, decomposing
 as `u(S) = 22` + `u(F^-1) = 13`. Both halves were also verified by hand against
 the paper before the code was written.
 
-### `src/coefficients.c`, `src/sweep.c`, and `src/benchmark.c`
+### Coefficients, sweeps, and benchmarks
+
+Milestone 1 programs are in `src/milestone1/`; the PPM sweep and benchmark
+programs are in `src/milestone2/`.
 
 * `coefficients.c` strictly loads the complete published FAST coefficient grid
   and rejects malformed, duplicate, missing, or out-of-range records.
@@ -347,6 +376,20 @@ Median speedups from the current run are:
 `T=1` isolates algorithmic work reduction; higher thread counts add OpenMP
 parallelism. Full trial data, effective thread counts, throughput, speedup, and
 efficiency are in `results/ppm_benchmark_results.csv`.
+
+## Verified GPU checkpoint
+
+The isolated CUDA implementation under `src/milestone_gpu/` supports scalar and
+table-based recovery for GF(2^8/16/32), with host-side gPPM cost selection and
+batched matrix-vector kernels. `make gpu-test` includes focused CUDA tests and
+the 32 MiB smoke benchmark. `make gpu-benchmark` compares both GPU variants
+against optimized CPU M3 with eight OpenMP threads; timing includes transfers.
+Make discovers `nvcc` in PATH or `/usr/local/cuda*/bin/` (or set `NVCC` explicitly).
+
+On the RTX 4050/CUDA 13.0 run, all 270 timed trials pass. The table GPU variant
+beats CPU M3 by 1.32×–1.39× for the tested GF(2^32) cases; CPU M3 is faster for
+GF(2^8/16). Full methodology, correctness coverage, raw data and plots:
+[`results/milestone_gpu/GPU_Results.md`](results/milestone_gpu/GPU_Results.md).
 
 ## Presentation plots
 

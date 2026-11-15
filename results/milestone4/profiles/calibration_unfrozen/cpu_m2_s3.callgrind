@@ -1,0 +1,26 @@
+# callgrind format
+version: 1
+creator: callgrind-3.18.1
+pid: 99051
+cmd:  ./build/m4_profile_cpu --variant cpu --threads 1 --m 2 --s 3 --trials 1 --profile callgrind --csv /home/arelius/projects/parallel_Computing_gPPM/results/milestone4/profiles/cpu_m2_s3.csv
+part: 2
+
+
+desc: I1 cache: 
+desc: D1 cache: 
+desc: LL cache: 
+
+desc: Timerange: Basic block 65518981 - 65518983
+desc: Trigger: Program termination
+
+positions: line
+events: Ir
+summary: 18446744073350373867
+
+
+ob=(1) /home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu
+fl=(1) /home/arelius/projects/parallel_Computing_gPPM/src/milestone4/benchmark.c
+fn=(0) main
+135 9
+
+totals: 9

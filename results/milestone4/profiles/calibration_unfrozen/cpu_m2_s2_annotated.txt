@@ -1,0 +1,633 @@
+--------------------------------------------------------------------------------
+Profile data file '/home/arelius/projects/parallel_Computing_gPPM/results/milestone4/profiles/cpu_m2_s2.callgrind.1' (creator: callgrind-3.18.1)
+--------------------------------------------------------------------------------
+I1 cache: 
+D1 cache: 
+LL cache: 
+Timerange: Basic block 0 - 18063862
+Trigger: Client Request
+Profiled target:  ./build/m4_profile_cpu --variant cpu --threads 1 --m 2 --s 2 --trials 1 --profile callgrind --csv /home/arelius/projects/parallel_Computing_gPPM/results/milestone4/profiles/cpu_m2_s2.csv (PID 98811, part 1)
+Events recorded:  Ir
+Events shown:     Ir
+Event sort order: Ir
+Thresholds:       99
+Include dirs:     
+User annotated:   
+Auto-annotation:  on
+
+--------------------------------------------------------------------------------
+Ir                   
+--------------------------------------------------------------------------------
+161,651,903 (100.0%)  PROGRAM TOTALS
+
+--------------------------------------------------------------------------------
+Ir                   file:function
+--------------------------------------------------------------------------------
+85,411,396 (52.84%)  /usr/lib/gcc/x86_64-linux-gnu/11/include/avx2intrin.h:mult_xors_gf16_avx2
+21,797,558 (13.48%)  src/milestone3/gf.c:mult_xors_gf16_avx2 [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+19,709,952 (12.19%)  /usr/lib/gcc/x86_64-linux-gnu/11/include/emmintrin.h:mult_xors_gf16_avx2
+ 9,041,165 ( 5.59%)  ./string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S:__memset_avx2_unaligned_erms [/usr/lib/x86_64-linux-gnu/libc.so.6]
+ 6,569,984 ( 4.06%)  /usr/lib/gcc/x86_64-linux-gnu/11/include/avxintrin.h:mult_xors_gf16_avx2
+ 6,569,984 ( 4.06%)  /usr/lib/gcc/x86_64-linux-gnu/11/include/smmintrin.h:mult_xors_gf16_avx2
+ 4,510,448 ( 2.79%)  src/milestone3/gf.h:mult_xors_gf16_avx2
+ 2,729,712 ( 1.69%)  src/milestone3/gf.c:xor_region_avx2 [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+ 2,727,936 ( 1.69%)  /usr/lib/gcc/x86_64-linux-gnu/11/include/avx2intrin.h:xor_region_avx2
+   909,312 ( 0.56%)  /usr/lib/gcc/x86_64-linux-gnu/11/include/avxintrin.h:xor_region_avx2
+   686,757 ( 0.42%)  src/milestone3/matrix.c:mat_mul [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+
+--------------------------------------------------------------------------------
+-- Auto-annotated source: /usr/lib/gcc/x86_64-linux-gnu/11/include/avx2intrin.h
+--------------------------------------------------------------------------------
+Ir                  
+
+-- line 173 ----------------------------------------
+         .           					(__v4di)(__m256i)(B),	   \
+         .           					(int)(N) * 8))
+         .           #endif
+         .           
+         .           extern __inline __m256i
+         .           __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+         .           _mm256_and_si256 (__m256i __A, __m256i __B)
+         .           {
+13,139,968 ( 8.13%)    return (__m256i) ((__v4du)__A & (__v4du)__B);
+         .           }
+         .           
+         .           extern __inline __m256i
+         .           __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+         .           _mm256_andnot_si256 (__m256i __A, __m256i __B)
+         .           {
+         .             return (__m256i) __builtin_ia32_andnotsi256 ((__v4di)__A, (__v4di)__B);
+         .           }
+-- line 189 ----------------------------------------
+-- line 497 ----------------------------------------
+         .           {
+         .             return (__m256i) __builtin_ia32_pmovzxbq256 ((__v16qi)__X);
+         .           }
+         .           
+         .           extern __inline __m256i
+         .           __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+         .           _mm256_cvtepu16_epi32 (__m128i __X)
+         .           {
+13,139,968 ( 8.13%)    return (__m256i) __builtin_ia32_pmovzxwd256 ((__v8hi)__X);
+         .           }
+         .           
+         .           extern __inline __m256i
+         .           __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+         .           _mm256_cvtepu16_epi64 (__m128i __X)
+         .           {
+         .             return (__m256i) __builtin_ia32_pmovzxwq256 ((__v8hi)__X);
+         .           }
+-- line 513 ----------------------------------------
+-- line 767 ----------------------------------------
+         .           {
+         .             return (__m256i)__builtin_ia32_psrlw256((__v16hi)__A, (__v8hi)__B);
+         .           }
+         .           
+         .           extern __inline __m256i
+         .           __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+         .           _mm256_srli_epi32 (__m256i __A, int __B)
+         .           {
+ 6,569,984 ( 4.06%)    return (__m256i)__builtin_ia32_psrldi256 ((__v8si)__A, __B);
+         .           }
+         .           
+         .           extern __inline __m256i
+         .           __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+         .           _mm256_srl_epi32 (__m256i __A, __m128i __B)
+         .           {
+         .             return (__m256i)__builtin_ia32_psrld256((__v8si)__A, (__v4si)__B);
+         .           }
+-- line 783 ----------------------------------------
+-- line 907 ----------------------------------------
+         .           {
+         .             return (__m256i)__builtin_ia32_punpcklqdq256 ((__v4di)__A, (__v4di)__B);
+         .           }
+         .           
+         .           extern __inline __m256i
+         .           __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+         .           _mm256_xor_si256 (__m256i __A, __m256i __B)
+         .           {
+ 9,297,920 ( 5.75%)    return (__m256i) ((__v4du)__A ^ (__v4du)__B);
+         .           }
+         .           
+         .           extern __inline __m256i
+         .           __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+         .           _mm256_stream_load_si256 (__m256i const *__X)
+         .           {
+         .             return (__m256i) __builtin_ia32_movntdqa256 ((__v4di *) __X);
+         .           }
+-- line 923 ----------------------------------------
+-- line 1090 ----------------------------------------
+         .             ((__m256i) __builtin_ia32_permti256 ((__v4di)(__m256i)(X), (__v4di)(__m256i)(Y), (int)(M)))
+         .           #endif
+         .           
+         .           #ifdef __OPTIMIZE__
+         .           extern __inline __m128i
+         .           __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+         .           _mm256_extracti128_si256 (__m256i __X, const int __M)
+         .           {
+ 6,569,984 ( 4.06%)    return (__m128i) __builtin_ia32_extract128i256 ((__v4di)__X, __M);
+         .           }
+         .           #else
+         .           #define _mm256_extracti128_si256(X, M)				\
+         .             ((__m128i) __builtin_ia32_extract128i256 ((__v4di)(__m256i)(X), (int)(M)))
+         .           #endif
+         .           
+         .           #ifdef __OPTIMIZE__
+         .           extern __inline __m256i
+-- line 1106 ----------------------------------------
+-- line 1593 ----------------------------------------
+         .           
+         .           extern __inline __m256i
+         .           __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+         .           _mm256_i32gather_epi32 (int const *__base, __m256i __index, const int __scale)
+         .           {
+         .             __v8si __src = __extension__ (__v8si){ 0, 0, 0, 0, 0, 0, 0, 0 };
+         .             __v8si __mask = __extension__ (__v8si){ ~0, ~0, ~0, ~0, ~0, ~0, ~0, ~0 };
+         .           
+39,421,508 (24.39%)    return (__m256i) __builtin_ia32_gathersiv8si (__src,
+         .           						__base,
+         .           						(__v8si)__index,
+         .           						__mask,
+         .           						__scale);
+         .           }
+         .           
+         .           extern __inline __m256i
+         .           __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+-- line 1609 ----------------------------------------
+
+--------------------------------------------------------------------------------
+-- Auto-annotated source: src/milestone3/gf.c
+--------------------------------------------------------------------------------
+Ir                  
+
+-- line 15 ----------------------------------------
+         .           #else
+         .           #define GF_SIMD_BUILD 0
+         .           #endif
+         .           
+         .           /* Counting stays off the shared hot path during OpenMP recovery. */
+         .           _Thread_local uint64_t gf_mult_xors_count = 0;
+         .           
+         .           double gf_cost_c(const gf_t *gf)
+         9 ( 0.00%)  {
+         .               enum { BYTES = 256 * 1024, ROUNDS = 8 };
+         .               static double cache[3];
+         .               static int ready[3];
+         .               uint8_t *src = NULL, *dst = NULL;
+         .               clock_t start, xor_ticks, mul_ticks;
+         .               size_t i;
+         .               int width_index, round;
+         .               double ratio;
+         .           
+         6 ( 0.00%)      if (!gf || (gf->w != 8 && gf->w != 16 && gf->w != 32)) return 1.0;
+         7 ( 0.00%)      width_index = gf->w == 8 ? 0 : gf->w == 16 ? 1 : 2;
+         7 ( 0.00%)      if (ready[width_index]) return cache[width_index];
+         .           
+         .               src = malloc(BYTES);
+         .               dst = malloc(BYTES);
+         .               if (!src || !dst) goto fallback;
+         .               for (i = 0; i < BYTES; i++) {
+         .                   src[i] = (uint8_t)(i * 37U + 11U);
+         .                   dst[i] = (uint8_t)(i * 13U + 7U);
+         .               }
+-- line 43 ----------------------------------------
+-- line 68 ----------------------------------------
+         .               return ratio;
+         .           
+         .           fallback:
+         .               free(src);
+         .               free(dst);
+         .               cache[width_index] = 1.0;
+         .               ready[width_index] = 1;
+         .               return 1.0;
+         8 ( 0.00%)  }
+         .           
+         .           /* Primitive polynomials (Plank's conventional choices). */
+         .           #define PRIM_POLY_8   0x11DU
+         .           #define PRIM_POLY_16  0x1100BU
+         .           /* GF-Complete's default w=32 polynomial, with the x^32 term implicit. */
+         .           #define PRIM_POLY_32  0x00400007U
+         .           
+         .           #define SPLIT_PLANES  16U
+-- line 84 ----------------------------------------
+-- line 175 ----------------------------------------
+         .                       plane = gf->split8 + (size_t)(bi * 4 + bj) * SPLIT_SIZE;
+         .                       product ^= plane[(av << 8) | bv];
+         .                   }
+         .               }
+         .               return product;
+         .           }
+         .           
+         .           uint32_t gf_inv(const gf_t *gf, uint32_t a)
+        36 ( 0.00%)  {
+        72 ( 0.00%)      assert(a != 0);
+        72 ( 0.00%)      if (gf->w == 32) return gf_pow(gf, a, UINT32_MAX - 1U);
+       216 ( 0.00%)      return gf->expt[gf->nz - gf->logt[a]];
+        36 ( 0.00%)  }
+         .           
+         .           uint32_t gf_div(const gf_t *gf, uint32_t a, uint32_t b)
+         .           {
+         .               assert(b != 0);
+         .               if (a == 0) return 0;
+         .               if (gf->w == 32) return gf_mul(gf, a, gf_inv(gf, b));
+         .               return gf->expt[gf->logt[a] + gf->nz - gf->logt[b]];
+         .           }
+-- line 195 ----------------------------------------
+-- line 308 ----------------------------------------
+         .               for (; i < nbytes; i++) dst[i] ^= (uint8_t)gf_mul(gf, coefficient, src[i]);
+         .           }
+         .           
+         .           __attribute__((target("avx2")))
+         .           static void xor_region_avx2(const uint8_t *src, uint8_t *dst, size_t nbytes)
+         .           {
+         .               size_t i = 0;
+         .           
+ 2,729,046 ( 1.69%)      for (; i + 32 <= nbytes; i += 32) {
+         .                   __m256i x = _mm256_loadu_si256((const __m256i *)(src + i));
+         .                   __m256i y = _mm256_loadu_si256((const __m256i *)(dst + i));
+         .                   _mm256_storeu_si256((__m256i *)(dst + i), _mm256_xor_si256(x, y));
+         .               }
+       444 ( 0.00%)      for (; i < nbytes; i++) dst[i] ^= src[i];
+       222 ( 0.00%)  }
+         .           
+         .           __attribute__((target("avx2")))
+         .           static void mult_xors_gf16_avx2(const uint8_t *src, uint8_t *dst,
+         .                                           uint16_t coefficient, size_t nbytes,
+         .                                           const gf_t *gf)
+    13,634 ( 0.01%)  {
+         .               uint32_t products[2][256];
+         .               unsigned int byte, value;
+       802 ( 0.00%)      size_t i = 0;
+         .           
+     7,218 ( 0.00%)      for (byte = 0; byte < 2; byte++)
+   821,248 ( 0.51%)          for (value = 0; value < 256; value++)
+ 1,228,664 ( 0.76%)              products[byte][value] = gf_mul(
+         .                           gf, coefficient, (uint32_t)value << (8 * byte));
+         .           
+19,713,962 (12.20%)      for (; i + 16 <= nbytes; i += 16) {
+         .                   __m128i packed_src = _mm_loadu_si128((const __m128i *)(src + i));
+         .                   __m256i words = _mm256_cvtepu16_epi32(packed_src);
+         .                   __m256i lo = _mm256_and_si256(words, _mm256_set1_epi32(0xff));
+         .                   __m256i hi = _mm256_and_si256(_mm256_srli_epi32(words, 8),
+         .                                                 _mm256_set1_epi32(0xff));
+         .                   __m256i product = _mm256_xor_si256(
+         .                       _mm256_i32gather_epi32((const int *)products[0], lo, 4),
+         .                       _mm256_i32gather_epi32((const int *)products[1], hi, 4));
+         .                   __m128i lower = _mm256_castsi256_si128(product);
+         .                   __m128i upper = _mm256_extracti128_si256(product, 1);
+         .                   __m128i packed_product = _mm_packus_epi32(lower, upper);
+         .                   __m128i target = _mm_loadu_si128((const __m128i *)(dst + i));
+         .                   _mm_storeu_si128((__m128i *)(dst + i),
+         .                                    _mm_xor_si128(target, packed_product));
+         .               }
+     2,406 ( 0.00%)      for (; i < nbytes; i += 2) {
+         .                   uint16_t source, target;
+         .                   memcpy(&source, src + i, sizeof source);
+         .                   memcpy(&target, dst + i, sizeof target);
+         .                   target ^= (uint16_t)gf_mul(gf, coefficient, source);
+         .                   memcpy(dst + i, &target, sizeof target);
+         .               }
+     9,624 ( 0.01%)  }
+         .           
+         .           __attribute__((target("avx2")))
+         .           static void mult_xors_gf32_avx2(const uint8_t *src, uint8_t *dst,
+         .                                           uint32_t coefficient, size_t nbytes,
+         .                                           const gf_t *gf)
+         .           {
+         .               uint32_t products[4][256];
+         .               unsigned int byte, value;
+-- line 369 ----------------------------------------
+-- line 409 ----------------------------------------
+         .           {
+         .               assert(a != 0);
+         .               gf_mult_xors_count++;
+         .               mult_XORs_scalar_impl(d0, d1, a, nbytes, gf);
+         .           }
+         .           
+         .           void mult_XORs(const uint8_t *d0, uint8_t *d1, uint32_t a,
+         .                          size_t nbytes, const gf_t *gf)
+     1,024 ( 0.00%)  {
+     2,048 ( 0.00%)      assert(a != 0);          /* zero coefficients must be skipped by the caller */
+     1,024 ( 0.00%)      gf_mult_xors_count++;
+         .           #if GF_SIMD_BUILD
+     3,072 ( 0.00%)      if (gf->w == 8 && __builtin_cpu_supports("ssse3")) {
+         .                   if (a == 1)
+         .                       xor_region_ssse3(d0, d1, nbytes);
+         .                   else
+         .                       mult_xors_gf8_ssse3(d0, d1, (uint8_t)a, nbytes, gf);
+         .                   return;
+         .               }
+     6,144 ( 0.00%)      if ((gf->w == 16 || gf->w == 32) && __builtin_cpu_supports("avx2")) {
+     2,048 ( 0.00%)          if (a == 1)
+       444 ( 0.00%)              xor_region_avx2(d0, d1, nbytes);
+ 6,366,960 ( 3.94%)  => src/milestone3/gf.c:xor_region_avx2 (222x)
+     1,604 ( 0.00%)          else if (gf->w == 16)
+     1,604 ( 0.00%)              mult_xors_gf16_avx2(d0, d1, (uint16_t)a, nbytes, gf);
+144,569,322 (89.43%)  => src/milestone3/gf.c:mult_xors_gf16_avx2 (802x)
+         .                   else
+         .                       mult_xors_gf32_avx2(d0, d1, a, nbytes, gf);
+         .                   return;
+         .               }
+         .           #endif
+         .               mult_XORs_scalar_impl(d0, d1, a, nbytes, gf);
+         .           }
+
+--------------------------------------------------------------------------------
+-- Auto-annotated source: /usr/lib/gcc/x86_64-linux-gnu/11/include/emmintrin.h
+--------------------------------------------------------------------------------
+Ir                  
+
+-- line 731 ----------------------------------------
+         .           _mm_store_si128 (__m128i *__P, __m128i __B)
+         .           {
+         .             *__P = __B;
+         .           }
+         .           
+         .           extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+         .           _mm_storeu_si128 (__m128i_u *__P, __m128i __B)
+         .           {
+ 6,569,984 ( 4.06%)    *__P = __B;
+         .           }
+         .           
+         .           extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+         .           _mm_storel_epi64 (__m128i_u *__P, __m128i __B)
+         .           {
+         .             *(__m64_u *)__P = (__m64) ((__v2di)__B)[0];
+         .           }
+         .           
+-- line 747 ----------------------------------------
+-- line 1321 ----------------------------------------
+         .           _mm_or_si128 (__m128i __A, __m128i __B)
+         .           {
+         .             return (__m128i) ((__v2du)__A | (__v2du)__B);
+         .           }
+         .           
+         .           extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+         .           _mm_xor_si128 (__m128i __A, __m128i __B)
+         .           {
+13,139,968 ( 8.13%)    return (__m128i) ((__v2du)__A ^ (__v2du)__B);
+         .           }
+         .           
+         .           extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+         .           _mm_cmpeq_epi8 (__m128i __A, __m128i __B)
+         .           {
+         .             return (__m128i) ((__v16qi)__A == (__v16qi)__B);
+         .           }
+         .           
+-- line 1337 ----------------------------------------
+
+--------------------------------------------------------------------------------
+-- Auto-annotated source: /usr/lib/gcc/x86_64-linux-gnu/11/include/smmintrin.h
+--------------------------------------------------------------------------------
+Ir                 
+
+-- line 553 ----------------------------------------
+        .             return (__m128i) __builtin_ia32_pmovzxbw128 ((__v16qi)__X);
+        .           }
+        .           
+        .           /* Pack 8 double words from 2 operands into 8 words of result with
+        .              unsigned saturation. */
+        .           extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+        .           _mm_packus_epi32 (__m128i __X, __m128i __Y)
+        .           {
+6,569,984 ( 4.06%)    return (__m128i) __builtin_ia32_packusdw128 ((__v4si)__X, (__v4si)__Y);
+        .           }
+        .           
+        .           /* Sum absolute 8-bit integer difference of adjacent groups of 4
+        .              byte integers in the first 2 operands.  Starting offsets within
+        .              operands are determined by the 3rd mask operand.  */
+        .           
+        .           #ifdef __OPTIMIZE__
+        .           extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+-- line 569 ----------------------------------------
+
+--------------------------------------------------------------------------------
+-- Auto-annotated source: src/milestone3/gf.h
+--------------------------------------------------------------------------------
+Ir                 
+
+-- line 22 ----------------------------------------
+        .           
+        .           int  gf_init(gf_t *gf, int w);
+        .           void gf_free(gf_t *gf);
+        .           
+        .           uint32_t gf_mul32(const gf_t *gf, uint32_t a, uint32_t b);
+        .           
+        .           static inline uint32_t gf_mul(const gf_t *gf, uint32_t a, uint32_t b)
+        .           {
+1,672,940 ( 1.03%)      if (a == 0 || b == 0) return 0;
+  843,192 ( 0.52%)      if (gf->w == 32) return gf_mul32(gf, a, b);
+2,082,748 ( 1.29%)      return gf->expt[gf->logt[a] + gf->logt[b]];
+        .           }
+        .           
+        .           uint32_t gf_inv(const gf_t *gf, uint32_t a);
+        .           uint32_t gf_div(const gf_t *gf, uint32_t a, uint32_t b);
+        .           uint32_t gf_pow(const gf_t *gf, uint32_t a, uint32_t e);
+        .           
+        .           /* ---- mult_XORs() ------------------------------------------------------- */
+        .           /* Paper Sec. 2.3: multiply the region d0 by the w-bit constant a over
+-- line 40 ----------------------------------------
+-- line 56 ----------------------------------------
+        .           
+        .           /* Calibrate c in C=u+c*v for this process, field, and active arithmetic path.
+        .            * The result is cached by field width after the first measurement. */
+        .           double gf_cost_c(const gf_t *gf);
+        .           
+        .           /* Instrumentation.  Each thread owns its counter so parallel recovery does not
+        .            * add synchronization to the region-arithmetic hot path. */
+        .           extern _Thread_local uint64_t gf_mult_xors_count;
+       19 ( 0.00%)  static inline void     gf_count_reset(void) { gf_mult_xors_count = 0; }
+       32 ( 0.00%)  static inline uint64_t gf_count_get(void)   { return gf_mult_xors_count; }
+        .           static inline void     gf_count_add(uint64_t n) { gf_mult_xors_count += n; }
+        .           
+        .           #endif /* GF_H */
+
+--------------------------------------------------------------------------------
+-- Auto-annotated source: /usr/lib/gcc/x86_64-linux-gnu/11/include/avxintrin.h
+--------------------------------------------------------------------------------
+Ir                 
+
+-- line 927 ----------------------------------------
+        .           _mm256_loadu_si256 (__m256i_u const *__P)
+        .           {
+        .             return *__P;
+        .           }
+        .           
+        .           extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+        .           _mm256_storeu_si256 (__m256i_u *__P, __m256i __A)
+        .           {
+  909,312 ( 0.56%)    *__P = __A;
+        .           }
+        .           
+        .           extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+        .           _mm_maskload_pd (double const *__P, __m128i __M)
+        .           {
+        .             return (__m128d) __builtin_ia32_maskloadpd ((const __v2df *)__P,
+        .           					      (__v2di)__M);
+        .           }
+-- line 943 ----------------------------------------
+-- line 1461 ----------------------------------------
+        .           _mm256_castps256_ps128 (__m256 __A)
+        .           {
+        .             return (__m128) __builtin_ia32_ps_ps256 ((__v8sf)__A);
+        .           }
+        .           
+        .           extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+        .           _mm256_castsi256_si128 (__m256i __A)
+        .           {
+6,569,984 ( 4.06%)    return (__m128i) __builtin_ia32_si_si256 ((__v8si)__A);
+        .           }
+        .           
+        .           /* When cast is done from a 128 to 256-bit type, the low 128 bits of
+        .              the 256-bit result contain source parameter value and the upper 128
+        .              bits of the result are undefined.  Those intrinsics shouldn't
+        .              generate any extra moves.  */
+        .           
+        .           extern __inline __m256d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+-- line 1477 ----------------------------------------
+
+--------------------------------------------------------------------------------
+-- Auto-annotated source: src/milestone3/matrix.c
+--------------------------------------------------------------------------------
+Ir               
+
+      .           #include "matrix.h"
+      .           #include <stdio.h>
+      .           #include <stdlib.h>
+      .           #include <string.h>
+      .           
+      .           int mat_alloc(gf_mat *M, int rows, int cols)
+    250 ( 0.00%)  {
+      .               size_t count;
+      .           
+    135 ( 0.00%)      M->rows = M->cols = 0;
+     67 ( 0.00%)      M->e = NULL;
+    689 ( 0.00%)      if (rows <= 0 || cols <= 0 || (size_t)rows > SIZE_MAX / (size_t)cols)
+      .                   return -1;
+    135 ( 0.00%)      count = (size_t)rows * (size_t)cols;
+      .               if (count > SIZE_MAX / sizeof *M->e) return -1;
+    320 ( 0.00%)      M->e = calloc(count, sizeof *M->e);
+ 46,633 ( 0.03%)  => ???:0x000000000010a340 (17x)
+    219 ( 0.00%)      if (!M->e) return -1;
+    169 ( 0.00%)      M->rows = rows;
+    101 ( 0.00%)      M->cols = cols;
+     50 ( 0.00%)      return 0;
+    200 ( 0.00%)  }
+      .           
+      .           void mat_free(gf_mat *M)
+    252 ( 0.00%)  {
+    202 ( 0.00%)      free(M->e);
+ 12,748 ( 0.01%)  => ???:0x000000000010a230 (84x)
+    168 ( 0.00%)      M->e = NULL; M->rows = M->cols = 0;
+    168 ( 0.00%)  }
+      .           
+      .           void mat_print(const gf_mat *M, const char *name)
+      .           {
+      .               int i, j;
+      .               printf("%s (%dx%d):\n", name, M->rows, M->cols);
+      .               for (i = 0; i < M->rows; i++) {
+      .                   printf("  [");
+      .                   for (j = 0; j < M->cols; j++) printf("%4u", MAT(M, i, j));
+      .                   printf(" ]\n");
+      .               }
+      .           }
+      .           
+      .           long mat_nonzeros(const gf_mat *M)
+     51 ( 0.00%)  {
+    306 ( 0.00%)      long c = 0; size_t i, N = (size_t)M->rows * M->cols;
+168,073 ( 0.10%)      for (i = 0; i < N; i++) if (M->e[i] != 0) c++;
+      .               return c;
+    102 ( 0.00%)  }
+      .           
+      .           long mat_non_ones(const gf_mat *M)
+     51 ( 0.00%)  {
+    306 ( 0.00%)      long c = 0; size_t i, N = (size_t)M->rows * M->cols;
+168,073 ( 0.10%)      for (i = 0; i < N; i++) if (M->e[i] > 1) c++;
+      .               return c;
+    102 ( 0.00%)  }
+      .           
+      .           int mat_mul(const gf_mat *A, const gf_mat *B, const gf_t *gf, gf_mat *out)
+    153 ( 0.00%)  {
+      .               int i, j, k;
+      .           
+    289 ( 0.00%)      if (!A || !B || !gf || !out || !A->e || !B->e ||
+      .                   A->cols != B->rows)
+      .                   return -1;
+     51 ( 0.00%)      if (mat_alloc(out, A->rows, B->cols) != 0) return -1;
+      .           
+    323 ( 0.00%)      for (i = 0; i < A->rows; i++)
+  3,900 ( 0.00%)          for (k = 0; k < A->cols; k++) {
+  6,160 ( 0.00%)              uint32_t a = MAT(A, i, k);
+  2,464 ( 0.00%)              if (a == 0) continue;
+189,440 ( 0.12%)              for (j = 0; j < B->cols; j++) {
+313,920 ( 0.19%)                  uint32_t b = MAT(B, k, j);
+169,632 ( 0.10%)                  if (b != 0) MAT(out, i, j) ^= gf_mul(gf, a, b);
+      .                       }
+      .                   }
+     17 ( 0.00%)      return 0;
+    136 ( 0.00%)  }
+      .           
+      .           int mat_invert(const gf_mat *A, const gf_t *gf, gf_mat *out)
+    153 ( 0.00%)  {
+     17 ( 0.00%)      int n = A->rows, col, i, j, piv;
+      .               gf_mat W;               /* [A | I], n x 2n */
+      .           
+     34 ( 0.00%)      if (A->rows != A->cols) return -1;
+     17 ( 0.00%)      if (mat_alloc(&W, n, 2 * n) != 0) return -1;
+      .           
+    680 ( 0.00%)      for (i = 0; i < n; i++) {
+    510 ( 0.00%)          for (j = 0; j < n; j++) MAT(&W, i, j) = MAT(A, i, j);
+  1,590 ( 0.00%)  => ???:0x000000000010a380 (68x)
+     68 ( 0.00%)          MAT(&W, i, n + i) = 1;
+      .               }
+      .           
+    561 ( 0.00%)      for (col = 0; col < n; col++) {
+      .                   /* find a pivot */
+      .                   piv = -1;
+  1,440 ( 0.00%)          for (i = col; i < n; i++)
+  3,288 ( 0.00%)              if (MAT(&W, i, col) != 0) { piv = i; break; }
+      .                   if (piv < 0) { mat_free(&W); return -1; }   /* singular */
+      .           
+    196 ( 0.00%)          if (piv != col)
+  6,150 ( 0.00%)              for (j = 0; j < 2 * n; j++) {
+  2,040 ( 0.00%)                  uint32_t t = MAT(&W, col, j);
+  4,080 ( 0.00%)                  MAT(&W, col, j) = MAT(&W, piv, j);
+  2,040 ( 0.00%)                  MAT(&W, piv, j) = t;
+      .                       }
+      .           
+      .                   /* normalise the pivot row */
+    340 ( 0.00%)          if (MAT(&W, col, col) != 1) {
+    324 ( 0.00%)              uint32_t inv = gf_inv(gf, MAT(&W, col, col));
+    432 ( 0.00%)  => /home/arelius/projects/parallel_Computing_gPPM/src/milestone3/gf.c:gf_inv (36x)
+  4,032 ( 0.00%)              for (j = 0; j < 2 * n; j++)
+  2,752 ( 0.00%)                  MAT(&W, col, j) = gf_mul(gf, MAT(&W, col, j), inv);
+      .                   }
+      .           
+      .                   /* eliminate the column from every other row */
+  5,064 ( 0.00%)          for (i = 0; i < n; i++) {
+  1,232 ( 0.00%)              uint32_t f = MAT(&W, i, col);
+  4,792 ( 0.00%)              if (i == col || f == 0) continue;
+ 33,900 ( 0.02%)              for (j = 0; j < 2 * n; j++)
+ 22,464 ( 0.01%)                  MAT(&W, i, j) ^= gf_mul(gf, f, MAT(&W, col, j));
+      .                   }
+      .               }
+      .           
+      .               if (mat_alloc(out, n, n) != 0) { mat_free(&W); return -1; }
+    374 ( 0.00%)      for (i = 0; i < n; i++)
+    340 ( 0.00%)          for (j = 0; j < n; j++) MAT(out, i, j) = MAT(&W, i, n + j);
+  1,590 ( 0.00%)  => ???:0x000000000010a380 (68x)
+      .           
+      .               mat_free(&W);
+     34 ( 0.00%)      return 0;
+    136 ( 0.00%)  }
+
+--------------------------------------------------------------------------------
+The following files chosen for auto-annotation could not be found:
+--------------------------------------------------------------------------------
+  ./string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S
+
+--------------------------------------------------------------------------------
+Ir                   
+--------------------------------------------------------------------------------
+152,167,978 (94.13%)  events annotated
+

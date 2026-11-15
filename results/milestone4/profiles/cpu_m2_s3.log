@@ -1,0 +1,12 @@
+==103211== Callgrind, a call-graph generating cache profiler
+==103211== Copyright (C) 2002-2017, and GNU GPL'd, by Josef Weidendorfer et al.
+==103211== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
+==103211== Command: ./build/m4_profile_cpu --variant cpu --threads 1 --m 2 --s 3 --trials 1 --profile callgrind --csv /home/arelius/projects/parallel_Computing_gPPM/results/milestone4/profiles/cpu_m2_s3.csv
+==103211== 
+==103211== For interactive control, run 'callgrind_control -h'.
+PASS m=2 s=3 w=32 stripe=32 MiB: 1 variants x 1 trials
+==103211== 
+==103211== Events    : Ir
+==103211== Collected : 359178989
+==103211== 
+==103211== I   refs:      359,178,989

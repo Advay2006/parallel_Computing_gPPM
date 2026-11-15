@@ -1,0 +1,140 @@
+--------------------------------------------------------------------------------
+Profile data file '/home/arelius/projects/parallel_Computing_gPPM/results/milestone4/profiles/cpu_m2_s1.callgrind.1' (creator: callgrind-3.18.1)
+--------------------------------------------------------------------------------
+I1 cache: 
+D1 cache: 
+LL cache: 
+Timerange: Basic block 0 - 15382992
+Trigger: Client Request
+Profiled target:  ./build/m4_profile_cpu --variant cpu --threads 1 --m 2 --s 1 --trials 1 --profile callgrind --csv /home/arelius/projects/parallel_Computing_gPPM/results/milestone4/profiles/cpu_m2_s1.csv (PID 103143, part 1)
+Events recorded:  Ir
+Events shown:     Ir
+Event sort order: Ir
+Thresholds:       99
+Include dirs:     
+User annotated:   
+Auto-annotation:  off
+
+--------------------------------------------------------------------------------
+Ir                   
+--------------------------------------------------------------------------------
+100,886,475 (100.0%)  PROGRAM TOTALS
+
+--------------------------------------------------------------------------------
+Ir                    file:function
+--------------------------------------------------------------------------------
+
+100,886,475 (100.0%)  *  src/milestone4/benchmark.c:main [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+100,886,379 (100.0%)  >   /home/arelius/projects/parallel_Computing_gPPM/src/milestone3/ppm.c:ppm_recover_sd (1x)
+         26 ( 0.00%)  >   ???:0x000000000010a2b0 (2x) [???]
+
+100,886,379 (100.0%)  < src/milestone4/benchmark.c:main (1x) [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+100,886,379 (100.0%)  *  /home/arelius/projects/parallel_Computing_gPPM/src/milestone3/ppm.c:ppm_recover_sd
+
+100,886,379 (100.0%)  *  src/milestone3/ppm.c:ppm_recover_sd [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+100,886,369 (100.0%)  >   src/milestone3/ppm.c:ppm_recover_sd_config (1x) [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+
+100,886,369 (100.0%)  < src/milestone3/ppm.c:ppm_recover_sd (1x) [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+100,886,369 (100.0%)  *  src/milestone3/ppm.c:ppm_recover_sd_config [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+ 59,382,012 (58.86%)  >   ???:0x000000000010a440 (1x) [???]
+ 40,008,389 (39.66%)  >   /home/arelius/projects/parallel_Computing_gPPM/src/milestone3/codec.c:ec_decode_normal_parallel (1x)
+    980,780 ( 0.97%)  >   /home/arelius/projects/parallel_Computing_gPPM/src/milestone3/codec.c:ec_choose_sequence (17x)
+    444,584 ( 0.44%)  >   src/milestone3/ppm.c:prepare_job (17x) [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+     45,255 ( 0.04%)  >   src/milestone3/ppm.c:copy_rows (16x) [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+      8,925 ( 0.01%)  >   /home/arelius/projects/parallel_Computing_gPPM/src/milestone3/matrix.c:mat_free (50x)
+      7,822 ( 0.01%)  >   ???:0x000000000010a260 (70x) [???]
+      1,345 ( 0.00%)  >   ???:0x000000000010a380 (4x) [???]
+      1,320 ( 0.00%)  >   ???:0x000000000010a3d0 (32x) [???]
+      1,175 ( 0.00%)  >   /home/arelius/projects/parallel_Computing_gPPM/src/milestone4/profile_cpu.c:__wrap_gf_cost_c (1x)
+
+ 90,638,376 (89.84%)  < src/milestone3/codec.c:ec_decode_normal (768x) [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+ 90,638,376 (89.84%)  *  /home/arelius/projects/parallel_Computing_gPPM/src/milestone3/gf.c:mult_XORs
+
+ 90,638,376 (89.84%)  *  src/milestone3/gf.c:mult_XORs [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+ 75,880,449 (75.21%)  >   src/milestone3/gf.c:mult_xors_gf8_ssse3 (543x) [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+ 14,747,175 (14.62%)  >   src/milestone3/gf.c:xor_region_ssse3 (225x) [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+
+ 75,880,449 (75.21%)  < src/milestone3/gf.c:mult_XORs (543x) [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+ 75,880,449 (75.21%)  *  src/milestone3/gf.c:mult_xors_gf8_ssse3 [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+
+ 59,382,012 (58.86%)  < src/milestone3/ppm.c:ppm_recover_sd_config (1x) [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+ 59,382,012 (58.86%)  *  ???:0x000000000010a440 [???]
+ 59,382,010 (58.86%)  >   ???:GOMP_parallel (1x) [/usr/lib/x86_64-linux-gnu/libgomp.so.1.0.0]
+
+ 59,382,010 (58.86%)  < ???:0x000000000010a440 (1x) [???]
+ 59,382,010 (58.86%)  *  ???:GOMP_parallel [/usr/lib/x86_64-linux-gnu/libgomp.so.1.0.0]
+ 59,380,864 (58.86%)  >   /home/arelius/projects/parallel_Computing_gPPM/src/milestone3/ppm.c:ppm_recover_sd_config._omp_fn.0 (1x)
+        724 ( 0.00%)  >   ???:0x000000000001dc40 (1x) [/usr/lib/x86_64-linux-gnu/libgomp.so.1.0.0]
+        134 ( 0.00%)  >   ???:0x00000000048866b0 (1x) [???]
+        116 ( 0.00%)  >   ???:0x000000000001de50 (1x) [/usr/lib/x86_64-linux-gnu/libgomp.so.1.0.0]
+         45 ( 0.00%)  >   ???:0x0000000000020910 (1x) [/usr/lib/x86_64-linux-gnu/libgomp.so.1.0.0]
+         20 ( 0.00%)  >   ???:0x00000000000147e0 (1x) [/usr/lib/x86_64-linux-gnu/libgomp.so.1.0.0]
+         15 ( 0.00%)  >   ???:0x0000000000016f10 (1x) [/usr/lib/x86_64-linux-gnu/libgomp.so.1.0.0]
+          6 ( 0.00%)  >   ???:0x000000000001f740 (1x) [/usr/lib/x86_64-linux-gnu/libgomp.so.1.0.0]
+
+ 59,380,864 (58.86%)  < ???:GOMP_parallel (1x) [/usr/lib/x86_64-linux-gnu/libgomp.so.1.0.0]
+ 59,380,864 (58.86%)  *  /home/arelius/projects/parallel_Computing_gPPM/src/milestone3/ppm.c:ppm_recover_sd_config._omp_fn.0
+
+ 59,380,819 (58.86%)  *  src/milestone3/ppm.c:ppm_recover_sd_config._omp_fn.0 [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+ 59,380,425 (58.86%)  >   /home/arelius/projects/parallel_Computing_gPPM/src/milestone3/codec.c:ec_decode_normal (15x)
+         55 ( 0.00%)  >   ???:0x000000000010a2c0 (1x) [???]
+         13 ( 0.00%)  >   ???:0x000000000010a360 (1x) [???]
+         10 ( 0.00%)  >   ???:0x000000000010a3a0 (1x) [???]
+          6 ( 0.00%)  >   ???:0x000000000010a2f0 (1x) [???]
+
+ 59,380,425 (58.86%)  < src/milestone3/ppm.c:ppm_recover_sd_config._omp_fn.0 (15x) [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+ 59,380,425 (58.86%)  *  /home/arelius/projects/parallel_Computing_gPPM/src/milestone3/codec.c:ec_decode_normal
+
+ 44,483,646 (44.09%)  *  /usr/lib/gcc/x86_64-linux-gnu/11/include/emmintrin.h:mult_xors_gf8_ssse3
+
+ 40,008,389 (39.66%)  < src/milestone3/ppm.c:ppm_recover_sd_config (1x) [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+ 40,008,389 (39.66%)  *  /home/arelius/projects/parallel_Computing_gPPM/src/milestone3/codec.c:ec_decode_normal_parallel
+
+ 40,008,389 (39.66%)  *  src/milestone3/codec.c:ec_decode_normal_parallel [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+ 40,008,310 (39.66%)  >   src/milestone3/codec.c:ec_decode_normal (1x) [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+
+ 40,008,310 (39.66%)  < src/milestone3/codec.c:ec_decode_normal_parallel (1x) [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+ 40,008,310 (39.66%)  *  src/milestone3/codec.c:ec_decode_normal [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+ 90,638,376 (89.84%)  >   /home/arelius/projects/parallel_Computing_gPPM/src/milestone3/gf.c:mult_XORs (768x)
+  4,329,546 ( 4.29%)  >   ???:0x000000000010a380 (16x) [???]
+      2,064 ( 0.00%)  >   ???:0x000000000010a260 (16x) [???]
+
+ 17,793,024 (17.64%)  *  /usr/lib/gcc/x86_64-linux-gnu/11/include/tmmintrin.h:mult_xors_gf8_ssse3
+
+ 14,747,175 (14.62%)  < src/milestone3/gf.c:mult_XORs (225x) [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+ 14,747,175 (14.62%)  *  src/milestone3/gf.c:xor_region_ssse3 [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+
+  9,216,000 ( 9.14%)  *  /usr/lib/gcc/x86_64-linux-gnu/11/include/emmintrin.h:xor_region_ssse3
+
+  4,447,229 ( 4.41%)  < ???:0x00000000048ee670 (88x) [???]
+  4,325,937 ( 4.29%)  < ???:0x000000000010a330 (33x) [???]
+  8,773,166 ( 8.70%)  *  ./string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S:__memset_avx2_unaligned_erms [/usr/lib/x86_64-linux-gnu/libc.so.6]
+
+  4,329,546 ( 4.29%)  < src/milestone3/codec.c:ec_decode_normal (16x) [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+     88,496 ( 0.09%)  < src/milestone3/matrix.c:mat_alloc (50x) [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+     45,143 ( 0.04%)  < src/milestone3/matrix.c:mat_mul (17x) [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+     23,983 ( 0.02%)  < src/milestone3/matrix.c:mat_invert (34x) [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+      5,195 ( 0.01%)  < src/milestone3/codec.c:ec_split (17x) [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+      1,345 ( 0.00%)  < src/milestone3/ppm.c:ppm_recover_sd_config (4x) [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+  4,493,708 ( 4.45%)  *  ???:0x000000000010a380 [???]
+  4,493,432 ( 4.45%)  >   ./malloc/./malloc/malloc.c:calloc (138x) [/usr/lib/x86_64-linux-gnu/libc.so.6]
+
+  4,493,432 ( 4.45%)  < ???:0x000000000010a380 (138x) [???]
+  4,493,432 ( 4.45%)  *  ./malloc/./malloc/malloc.c:calloc [/usr/lib/x86_64-linux-gnu/libc.so.6]
+  4,447,405 ( 4.41%)  >   ???:0x00000000048ee670 (88x) [???]
+     35,833 ( 0.04%)  >   ./malloc/./malloc/malloc.c:_int_malloc (138x) [/usr/lib/x86_64-linux-gnu/libc.so.6]
+
+  4,447,405 ( 4.41%)  < ./malloc/./malloc/malloc.c:calloc (88x) [/usr/lib/x86_64-linux-gnu/libc.so.6]
+  4,447,405 ( 4.41%)  *  ???:0x00000000048ee670 [???]
+  4,447,229 ( 4.41%)  >   ./string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S:__memset_avx2_unaligned_erms (88x) [/usr/lib/x86_64-linux-gnu/libc.so.6]
+
+  4,326,135 ( 4.29%)  *  /usr/include/x86_64-linux-gnu/bits/string_fortified.h:ec_decode_normal
+  4,326,003 ( 4.29%)  >   ???:0x000000000010a330 (33x) [???]
+
+  4,326,003 ( 4.29%)  < /usr/include/x86_64-linux-gnu/bits/string_fortified.h:ec_decode_normal (33x)
+  4,326,003 ( 4.29%)  *  ???:0x000000000010a330 [???]
+  4,325,937 ( 4.29%)  >   ./string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S:__memset_avx2_unaligned_erms (33x) [/usr/lib/x86_64-linux-gnu/libc.so.6]
+
+    980,780 ( 0.97%)  < src/milestone3/ppm.c:ppm_recover_sd_config (17x) [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+    980,780 ( 0.97%)  *  /home/arelius/projects/parallel_Computing_gPPM/src/milestone3/codec.c:ec_choose_sequence
+

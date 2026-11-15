@@ -1,0 +1,272 @@
+\documentclass[conference]{IEEEtran}
+
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{lmodern}
+\usepackage{tgtermes}
+\usepackage{url}
+
+\title{Cost-Selected Parallel Decoding of Sector--Disk Erasure Codes on CPUs and GPUs}
+
+\author{\IEEEauthorblockN{Tejas Singh Sodhi, Arnav Verma, Advay Satish, and Dhanush Kumar}
+\IEEEauthorblockA{Birla Institute of Technology and Science, Pilani\\
+K K Birla Goa Campus, Goa, India}}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Erasure-code recovery reconstructs missing storage sectors by applying finite-field equations to surviving data. This paper evaluates CPU and CUDA decoders for Sector--Disk codes, which protect against complete-disk and additional sector failures. The decoders select between applying matrices to data in sequence, multiplying coefficient matrices first, and partitioning independent failure groups. CPU optimization combines single-instruction multiple-data (SIMD) arithmetic with OpenMP; GPU variants use direct or table-based multiplication. An initial layer study achieves 1.69$\times$--34.85$\times$ the scalar sequential baseline at eight threads. A final 900-trial experiment compares one, two, four, and eight CPU threads with both GPU variants, using shuffled trial order and 8--128 MiB stripes. At 32 MiB, the table-based RTX 4050 decoder is 1.25$\times$--1.39$\times$ faster than the best tested CPU setting for GF($2^{32}$), including transfers and setup, but slower for the smaller fields. At 128 MiB, the CPU wins the tested GF($2^{32}$) case. Recovery-only profiles identify CPU region arithmetic and repeated coefficient-table construction, plus GPU kernel execution, transfers, and synchronization, as optimization targets. All final trials pass byte, checksum, and parity validation. These results favor workload-specific thread and backend selection over assuming that more parallelism always improves recovery.
+\end{abstract}
+
+\begin{IEEEkeywords}
+erasure coding, Sector--Disk codes, gPPM, OpenMP, SIMD, CUDA, recovery
+\end{IEEEkeywords}
+
+\section{Introduction}
+Erasure codes store data with parity so that missing sectors can be reconstructed without keeping full replicas. Recovery solves finite-field equations over the surviving data, and applying those equations to large regions can make computation a significant part of repair time. This study focuses on Sector--Disk (SD) codes, which tolerate both complete-disk failures and additional sector failures. Their parity-check equations include row-local relationships as well as equations spanning the whole stripe; this structure means some failed sectors can be recovered independently while others depend on those results \cite{li2023gppm}.
+
+Prior work provides two ways to exploit this structure. Partitioned and Parallel Matrix (PPM) recovery separates independent failure groups and processes them concurrently \cite{li2015ppm}. Generalized PPM (gPPM) also selects between two equivalent calculation orders: first applying the parity-check matrices to data regions, or first multiplying the smaller coefficient matrices \cite{li2023gppm}. Single-instruction multiple-data (SIMD) instructions accelerate the finite-field operations within each region \cite{plank2013simd}.
+
+This paper asks how much these optimizations contribute to an SD decoder, where execution time and instruction work concentrate, and when GPU offloading beats the best tested CPU thread count. An initial CPU-layer study isolates cumulative implementation gains. The final experiment then compares four CPU thread settings with two CUDA variants in shuffled order, measures stripe-size scaling, and profiles recovery-only ranges. At 32 MiB, the table GPU beats the best tested CPU setting in GF($2^{32}$), but the CPU wins the tested 128 MiB case. The contribution is a reproducible implementation, bottleneck analysis, and evaluation on one CPU/GPU system, rather than a new code construction or distributed-scaling algorithm.
+
+\section{Background and Related Work}
+\subsection{SD-code recovery}
+An SD code has $n$ disks, $r$ sector rows per disk, tolerates $m$ disk failures and $s$ additional sector failures, and uses the finite field $GF(2^w)$ of $w$-bit symbols. A stripe is the $nr$ sectors protected together; $z$ counts rows with additional sector failures. Its parity-check matrix $H$ has $mr+s$ rows. A valid stripe $B$ satisfies $HB=0$. Let $F,S$ contain the failed and surviving columns, and $B_F,B_S$ the corresponding data. For an invertible $F$,
+\begin{equation}
+B_F = F^{-1} S B_S.
+\label{eq:recover}
+\end{equation}
+The normal sequence computes $S B_S$ before applying $F^{-1}$. Matrix-first computes $G=F^{-1}S$ first, then applies $G$ to the surviving data. Both recover the same sectors, but their data-region operation counts can differ \cite{li2023gppm}. SD parity equations include both row-local and stripe-wide constraints. PPM uses the row-local structure to identify independent failure groups, then recovers the coupled remainder \cite{li2015ppm}.
+
+\subsection{Positioning among prior optimizations}
+PPM introduced matrix partitioning for asymmetric codes; gPPM extended it with per-matrix sequence selection that accounts for both nonzero and non-one coefficients \cite{li2015ppm,li2023gppm}. SIMD finite-field kernels accelerate each region operation and complement this reduction in work \cite{plank2013simd}. This study keeps the SD code and parity equations fixed, and optimizes the recovery schedule and arithmetic kernels.
+
+\section{Recovery Design}
+\subsection{Cost model and selection}
+For a coefficient matrix $M$, let $u(M)$ count nonzero entries and $v(M)$ count entries greater than one. A region multiply-XOR multiplies each source symbol by a field coefficient and XORs it into a destination; coefficient one requires only XOR. The estimated cost is
+\begin{equation}
+  C(M)=u(M)+c\,v(M),
+\label{eq:cost}
+\end{equation}
+where $c$ estimates the additional relative cost of a non-one multiply-XOR compared with a coefficient-one XOR. For the normal and matrix-first sequences,
+\begin{align}
+ C_{\mathrm{normal}} &= u(S)+u(F^{-1})+c[v(S)+v(F^{-1})],\\
+ C_{\mathrm{matrix}} &= u(F^{-1}S)+c\,v(F^{-1}S).
+\end{align}
+For PPM, the decoder sums the cheaper sequence estimate for each independent group and the remainder. It uses this partition only when its estimated cost is lower than the cheaper whole-matrix sequence. The model estimates arithmetic work, not scheduling overhead or elapsed time.
+
+The decoder estimates $c$ per field and build by timing coefficient-one and coefficient-two operations on 256 KiB regions. It uses the multiply-XOR/XOR time ratio minus one, clamped at zero. Since this calibration is hardware-dependent, $c$ can change sequence selection across platforms.
+
+\subsection{Partitioned and parallel execution}
+Rows with exactly $m$ failed sectors have enough row-local equations to recover them independently. The decoder prepares these groups and a remainder containing the other row-local and all stripe-wide equations. OpenMP workers recover disjoint groups; a barrier ensures those outputs are ready before the remainder is decoded. The team size is capped at the number of independent groups.
+
+The final optimization also splits the remainder's data regions into symbol-aligned byte ranges. Workers apply the same matrix-vector transformation to disjoint output ranges, avoiding write conflicts.
+
+\subsection{SIMD region kernels}
+The SIMD build dispatches at runtime with a scalar fallback. GF($2^8$) uses SSSE3 byte shuffles and nibble tables (16 bytes per vector); GF($2^{16}$) and GF($2^{32}$) use AVX2 gathers and byte-contribution tables (eight symbols per vector). The scalar comparison uses the same M3 code with SIMD disabled.
+
+\subsection{CUDA recovery}
+The GPU decoder retains matrix preparation and sequence selection on the host. Each CUDA thread computes one output field symbol, accumulating all nonzero coefficient contributions in a register. Adjacent threads process adjacent symbols, and one kernel evaluates a matrix-vector product rather than launching a kernel for each coefficient. Normal recovery needs two products; matrix-first needs one. Independent groups use separate streams and scratch buffers, and finish before the remainder starts. Each recovery transfers the stripe to the device once and copies the result back once.
+
+The GPU scalar variant uses direct shift-and-reduce field multiplication. The table variant uses logarithm/antilogarithm tables for GF($2^8$) and GF($2^{16}$), and split-byte tables for GF($2^{32}$). Both execute many CUDA threads; ``scalar'' describes reference arithmetic, not serial GPU execution. Each variant calibrates its cost weight using sixteen interleaved coefficient-one/coefficient-two probe pairs after warm-up, each on 32,768 symbols. This is a heuristic: the fixed coefficient and restricted probe values do not represent every coefficient or data distribution, especially for split-byte multiplication.
+
+\begin{table}[t]
+\caption{CPU decoder layers in the performance comparison.}
+\label{tab:layers}
+\centering
+\footnotesize
+\begin{tabular}{c p{0.76\columnwidth}}
+\hline
+Layer & Decoder configuration \\
+\hline
+L0 & Scalar normal recovery; single-threaded reference \\
+L1 & Scalar cost selection; parallel groups, serial remainder \\
+L2 & L1 with SIMD region kernels \\
+L3 & L2 with parallel byte ranges in the remainder \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.88\textwidth]{../../results/milestone3/m3_cumulative_speedup.png}
+\caption{Cumulative median speedup at T=4 and T=8 relative to scalar normal recovery. Curves show cost-selected scalar PPM, SIMD PPM, and SIMD PPM with a parallel remainder.}
+\label{fig:layers}
+\end{figure*}
+
+\begin{table*}[t]
+\caption{Single-threaded L0 median time and speedups of L1--L3 at T=8, each calculated as L0 time divided by layer time.}
+\label{tab:times}
+\centering
+\small
+\setlength{\tabcolsep}{8pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{cc l rrrr}
+\hline
+$m$ & $s$ & Field & L0 (ms) & L1 speedup & L2 speedup & L3 speedup\\
+\hline
+1&1&GF($2^8$) &36.031&1.25$\times$&9.89$\times$&\textbf{18.37$\times$}\\
+1&2&GF($2^{16}$)&55.211&1.11$\times$&3.54$\times$&\textbf{6.07$\times$}\\
+1&3&GF($2^{32}$)&45.913&1.10$\times$&1.38$\times$&\textbf{1.69$\times$}\\
+2&1&GF($2^8$) &65.968&1.53$\times$&15.06$\times$&\textbf{25.42$\times$}\\
+2&2&GF($2^{16}$)&82.134&1.22$\times$&3.73$\times$&\textbf{5.94$\times$}\\
+2&3&GF($2^{32}$)&60.146&1.41$\times$&1.51$\times$&\textbf{1.85$\times$}\\
+3&1&GF($2^8$) &99.343&2.23$\times$&21.10$\times$&\textbf{34.85$\times$}\\
+3&2&GF($2^{16}$)&111.524&1.54$\times$&4.41$\times$&\textbf{6.61$\times$}\\
+3&3&GF($2^{32}$)&74.373&1.49$\times$&1.63$\times$&\textbf{1.94$\times$}\\
+\hline
+\end{tabular}
+\end{table*}
+
+\section{Experimental Method}
+\subsection{Platform and workloads}
+Measurements use an Intel Core Ultra 9 185H and GCC 11.4.0 with \texttt{-O2 -fopenmp}. We test all nine $(m,s)\in\{1,2,3\}^2$ pairs at $n=r=16$, $z=1$, on a 32 MiB stripe (256 sectors of 128 KiB). For $s=1,2,3$, the fields are GF($2^8$), GF($2^{16}$), and GF($2^{32}$). Each configuration has one warm-up and ten timed recovery trials; fault injection, validation, checksums, and CSV output are excluded.
+
+Published coefficients come from Plank's SD implementation \cite{plank2013software}. Timed failures erase disks $0,\ldots,m-1$ and sectors in row zero at columns $m,\ldots,m+s-1$, exposing 15 independent groups. Field width and sector-failure tolerance vary together; cross-field results therefore do not isolate field width alone. The previous milestone used fixed matrix-first recovery for independent groups and a normal, serial remainder.
+
+GPU tests use an RTX 4050 Laptop GPU with 6 GB memory, driver 580.178.04, and CUDA 13.0.88 compiled with \texttt{-O2}. An initial 270-trial GPU check used an eight-thread CPU comparator. The final benchmark replaces that restricted comparison with CPU L3 at $T=1,2,4,8$ and both GPU variants, sharing encoded bytes and failures within each configuration. It runs all nine workloads at 32 MiB (540 trials), and $m=2$, $s=1,2,3$ at 8 and 128 MiB (180 trials each). Each variant warms once; a seeded shuffle changes variant order in each of ten timed rounds. OpenMP dynamic teams are disabled, with default OS scheduling and no explicit affinity. The per-field heuristic calibration is cached after warm-up.
+
+Table~\ref{tab:layers} defines the four CPU layers; $T$ is the requested OpenMP thread count. L0--L1 use the scalar build; L2--L3 use the SIMD build, so L2/L1 compares complete decoders. Cumulative speedup is the L0 median divided by a layer median; incremental gain is the previous layer's median divided by the current layer's.
+
+\subsection{Correctness and reported metrics}
+Timed trials must match the saved bytes and checksum and have zero syndrome, meaning every parity equation is satisfied. The CPU sweep tests one deterministic failure layout per feasible published parameter/$z$ point, using 16-byte sectors rather than the 128 KiB timed sectors. It covers $n,r=4,\ldots,24$, $m,s=1,2,3$, and $z=1,\ldots,s$, but not every failure placement. Large-buffer SIMD behavior is checked separately in unit tests and timed recoveries.
+
+Logical region-operation counts describe algorithmic work. Serial CPU paths count calls; parallel remainder and GPU paths derive counts from matrix nonzeros. The checks establish cross-thread consistency and agreement with each variant's warm-up count, not independent measurement of every executed operation. Useful-data throughput is non-parity bytes divided by recovery time; speedups use ratios of median end-to-end times.
+
+GPU end-to-end timing includes host matrix preparation, device allocation, table and stripe transfers, launches, synchronization, and cleanup. Buffers and tables are recreated per recovery; CUDA startup and cost calibration occur during warm-up. Summed per-kernel CUDA-event durations are also recorded. Because streams overlap, that sum may exceed wall-clock recovery time and cannot be subtracted from it to estimate transfer time.
+
+Final latency is the median of ten native trials. Thread speedup is $t_{\mathrm{L3},1}/t_{\mathrm{L3},T}$; efficiency divides this speedup by $T$. The CPU comparator for offload is the lowest median among the four tested settings, not an exhaustive hardware-tuned optimum. For example, the 25th--75th percentile range for the two-thread $(m,s)=(2,3)$ CPU case is 19.90--28.58 ms at 8 MiB and 31.29--37.36 ms at 32 MiB. All interquartile ranges are retained; they describe within-run variation, not confidence intervals.
+
+\subsection{Profiling protocol}
+Profiling is separate from native timing. Callgrind 3.18.1 records recovery-only CPU instructions at $T=1$, $m=2$, and each field, with 32 MiB stripes. Encoding, warm-up, fault injection, and validation are outside the instrumented range. A profiling-only linker wrapper freezes the corresponding native calibration weight, preventing emulation overhead from changing sequence selection. Each profile's logical operation count matches its native counterpart. Function self costs include instructions attributed to inlined intrinsic headers; instruction shares are not elapsed-time shares.
+
+Nsight Systems 2025.3.2 traces one warmed recovery for each GPU variant and field at the same parameters. CUDA profiler start/stop calls bound capture; CPU sampling is disabled. We report the union of kernel intervals across streams, actual device-copy durations, and host API durations. These categories overlap and are not an additive latency decomposition. Hardware counters through Linux \texttt{perf} are unavailable under the machine's permission settings, so cache-miss rates, bandwidth saturation, and occupancy are not inferred.
+
+\begin{table}[t]
+\caption{Nsight recovery traces at $m=2$, 32 MiB. Kernel union, summed device-copy intervals, stream-synchronization API time, and allocation/free API time are in ms and may overlap. One profiled run per row.}
+\label{tab:gpu-profile}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{clrrrrr}
+\hline
+$w$ & Variant & Kernels & Kernel & Copy & Sync & Alloc/free\\
+\hline
+8&Direct&32&23.97&9.31&23.43&2.90\\
+8&Table&17&18.56&8.93&18.29&1.99\\
+16&Direct&32&18.57&9.27&18.09&2.81\\
+16&Table&32&23.59&9.42&23.13&3.58\\
+32&Direct&32&17.11&9.03&16.55&2.77\\
+32&Table&17&11.80&10.12&11.53&2.17\\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Results}
+\subsection{Correctness}
+All 7,833 feasible CPU parameter-grid points pass; 105 of 7,938 parameter/$z$ combinations are infeasible. At $T=1$ and $T=4$, recovered bytes, syndromes, and operation counts agree. All 720 CPU-layer trials pass validation. Separate GPU tests pass 12 direct/two-stage matrix checks and 64 small-stripe recoveries across all fields and both variants. NVIDIA Compute Sanitizer reports zero memory errors. All 270 initial CPU/GPU trials and all 900 final benchmark trials pass byte equality, checksum, and zero-syndrome checks. The GPU tests do not reproduce the full CPU parameter-grid sweep.
+
+\subsection{Layered performance}
+Fig.~\ref{fig:layers} compares the optimization layers; Table~\ref{tab:times} gives their cumulative T=8 speedups and baseline times.
+
+L1 improves all nine cases by 1.10$\times$--2.23$\times$ over L0. SIMD gives its largest gain in GF($2^8$): L2 reaches 21.10$\times$ over L0 and up to 9.85$\times$ over L1. In GF($2^{32}$), L2 improves on L1 by 1.07$\times$--1.26$\times$. Parallel remainder processing adds 1.20$\times$--1.86$\times$ over L2 in every T=8 case. Final speedups range from 1.69$\times$ to 34.85$\times$.
+
+\subsection{Final thread and size scaling}
+Fig.~\ref{fig:scaling} shows the final same-run CPU scaling. Relative to L3 at one thread, the best tested setting achieves 1.37$\times$--2.90$\times$ at 32 MiB. Eight threads win all three GF($2^8$) cases, but two or four win five of the six wider-field cases. For example, at $(m,s)=(2,3)$, two threads take 32.12 ms and eight take 37.49 ms. This differs from the earlier fixed-order layer study: scheduling, calibration, and system variation can affect rankings. Gains over L2 at a fixed thread count must not be confused with gains from increasing the thread count.
+
+Fig.~\ref{fig:sizes} compares stripe sizes at $m=2$. For GF($2^{32}$), the best tested CPU takes 21.88, 32.12, and 59.47 ms at 8, 32, and 128 MiB; the table GPU takes 8.47, 24.48, and 83.26 ms. Thus its speedup over the best tested CPU changes from 2.58$\times$ to 1.31$\times$ to 0.71$\times$. Sizes ran in the fixed order 32, 8, then 128 MiB in separate processes with fresh calibration. System state, run order, and variable thread selection confound these one-session observations; they do not establish a general crossover threshold.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.90\textwidth]{../../results/milestone4/cpu_thread_scaling.png}
+\caption{Final CPU thread scaling on nine 32 MiB workloads. Speedup is relative to the one-thread L3 median for the same workload; dashed lines denote ideal scaling.}
+\label{fig:scaling}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.90\textwidth]{../../results/milestone4/stripe_size_scaling.png}
+\caption{Final end-to-end median latency versus stripe size at $m=2$. The CPU curve selects the lowest median among $T=1,2,4,8$ independently at each size. Both axes are logarithmic.}
+\label{fig:sizes}
+\end{figure*}
+
+\subsection{Final CPU/GPU comparison}
+Table~\ref{tab:final} reports final same-experiment medians. At 32 MiB, GPU table recovery beats the best tested CPU setting by 1.25$\times$--1.39$\times$ in the three GF($2^{32}$) cases, but is slower for every GF($2^8$) and GF($2^{16}$) case. GPU table is also slower than GPU direct for all GF($2^{16}$) cases. These are full-decoder comparisons: separately calibrated weights can change sequence selection and logical work, so they do not isolate table-kernel acceleration.
+
+\begin{table*}[t]
+\caption{Final 32 MiB end-to-end median recovery time in ms. CPU columns use L3 at the indicated thread count; GPU times include transfers and setup. Best $T$ minimizes the four CPU medians. Speedup is best CPU time divided by GPU table time.}
+\label{tab:final}
+\centering
+\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{ccrrrrrrrr}
+\hline
+$m$ & $w$ & CPU 1T & CPU 2T & CPU 4T & CPU 8T & GPU direct & GPU table & Best $T$ & Speedup\\
+\hline
+1&8&4.089&3.108&2.544&1.985&22.702&21.131&8&0.09$\times$\\
+1&16&16.617&9.803&9.578&8.791&21.619&27.699&8&0.32$\times$\\
+1&32&34.327&25.499&25.124&30.079&22.640&20.169&4&1.25$\times$\\
+2&8&6.496&4.730&3.548&2.800&35.804&29.888&8&0.09$\times$\\
+2&16&23.796&13.101&15.871&13.407&30.613&36.665&2&0.36$\times$\\
+2&32&45.473&32.116&35.755&37.495&29.877&24.476&2&1.31$\times$\\
+3&8&8.198&5.272&4.076&2.825&45.572&37.817&8&0.07$\times$\\
+3&16&31.103&16.444&23.577&18.545&36.630&40.537&2&0.41$\times$\\
+3&32&60.862&39.790&40.172&43.417&34.436&28.644&2&1.39$\times$\\
+\hline
+\end{tabular}
+\end{table*}
+
+All final timed variants select partitioned recovery, though their selected sequences can differ. The best CPU setting is chosen from the same measured session; selecting the minimum of noisy medians may favor the CPU and is not a separate held-out tuning evaluation.
+
+\section{Profiling and Bottleneck Analysis}
+\subsection{CPU instruction profile}
+Table~\ref{tab:cpu-profile} reports self instruction counts for one recovery per field. Region multiply-XOR and XOR functions account for 89.7\% and 93.4\% of instructions in the GF($2^8$) and GF($2^{16}$) profiles, respectively. In GF($2^{32}$), the scalar field-multiply routine alone accounts for 58.2\%; the call tree attributes 57.2 percentage points to calls from the AVX2 region kernel. That kernel constructs four 256-entry coefficient tables on each region operation before its gather loop. Reusing coefficient tables is therefore a concrete optimization candidate. Callgrind counts instructions under emulation, not native cycles or elapsed time; this single-thread profile does not explain all multithread scaling losses.
+
+\begin{table}[t]
+\caption{Recovery-only CPU Callgrind profile: $m=2$, 32 MiB, one thread. Self costs exclude callees; region includes multiply-XOR and XOR functions.}
+\label{tab:cpu-profile}
+\centering
+\footnotesize
+\begin{tabular}{rrrr}
+\hline
+$w$ & Instructions (million) & Region self & GF32 multiply self\\
+\hline
+8&100.9&89.7\%&0.0\%\\
+16&161.7&93.4\%&0.0\%\\
+32&359.2&38.4\%&58.2\%\\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{GPU trace and bottlenecks}
+Table~\ref{tab:gpu-profile} summarizes separate recovery-only traces. In the GF($2^{32}$) table trace, kernels occupy 11.80 ms of device timeline and copies sum to 10.12 ms. The 11.53 ms in stream-synchronization calls includes waiting for device work, so it must not be added to kernel time. The trace records 17 kernels, 52 copies, and 2.17 ms of allocation/free API time. For GF($2^{16}$), GPU table kernels occupy 23.59 ms versus 18.57 ms for direct arithmetic, consistent with the slower complete table decoder in this particular profile. Different sequence choices and profiler overhead limit attribution to arithmetic alone. Transfers, repeated allocation, table creation, kernel execution, and barriers are measurable targets; buffer reuse and batching should be tested rather than assumed to help.
+
+\section{Scope and Future Work}
+The evaluation covers one shared CPU/GPU system, representative failure layouts, nine 32 MiB configurations, and three sizes only at $m=2$. The CPU uses heterogeneous cores with no explicit thread binding; frequency, thermal state, calibration, and scheduling can affect outcomes. Ten trials per case do not establish across-session confidence intervals. Field width and sector-failure tolerance vary together. Profiles represent one recovery per variant and field, and no storage I/O, energy, or distributed scaling is measured. Follow-ups include bound-core and multi-session experiments, broader calibration and failure layouts, CPU coefficient-table reuse, and persistent GPU buffers or batching.
+
+\section{Conclusion}
+Cost selection, SIMD arithmetic, and OpenMP parallelism reach 1.69$\times$--34.85$\times$ the scalar CPU baseline in the initial layer study. The final same-session sweep finds that the best of four tested CPU thread counts improves L3 by 1.37$\times$--2.90$\times$ over one thread at 32 MiB. GPU table recovery wins the three GF($2^{32}$) 32 MiB cases against that comparator, but the tested 128 MiB case favors the CPU. Profiles expose substantial region arithmetic, repeated GF($2^{32}$) coefficient-table construction, device-copy activity, and synchronization. Correctness checks pass within the stated coverage. Thread count and backend should be selected for the actual stripe size and failure pattern, and future optimizations should be validated with end-to-end measurements.
+
+\section*{Reproducibility}
+\begingroup\raggedright
+CPU commands are \texttt{make m3-sweep} and \texttt{make m3-benchmark}; CUDA correctness uses \texttt{make gpu-test}. Final measurements and figures use \texttt{make m4-benchmark}, \texttt{make m4-profile}, and \texttt{make m4-analyze}. Raw trials, profiler traces, summaries, environment details, and scripts are in \url{results/milestone4/} and \url{scripts/}. Profiling dependencies and exact commands are documented there.
+\par\endgroup
+
+\IEEEtriggeratref{3}
+\begin{thebibliography}{00}
+\bibitem{li2023gppm}
+S. Li, Q. Cao, S. Wan, W. Xia, and C. Xie, ``gPPM: A generalized matrix operation and parallel algorithm to accelerate the encoding/decoding process of erasure codes,'' \emph{ACM Trans. Archit. Code Optim.}, vol. 20, no. 4, Art. no. 51, Dec. 2023, doi: 10.1145/3625005.
+
+\bibitem{li2015ppm}
+S. Li, Q. Cao, S. Wan, W. Zhang, C. Xie, X. He, and P. Subedi, ``PPM: A partitioned and parallel matrix algorithm to accelerate encoding/decoding process of asymmetric parity erasure codes,'' in \emph{Proc. 44th Int. Conf. Parallel Processing (ICPP)}, 2015, pp. 460--469, doi: 10.1109/ICPP.2015.55.
+
+\bibitem{plank2013simd}
+J. S. Plank, K. M. Greenan, and E. L. Miller, ``Screaming fast Galois field arithmetic using Intel SIMD instructions,'' in \emph{Proc. 11th USENIX Conf. File and Storage Technologies (FAST)}, 2013.
+
+\bibitem{plank2013software}
+J. S. Plank, ``Open source encoder and decoder for SD erasure codes,'' University of Tennessee, Tech. Rep. UT-CS-13-704, Jan. 2013. [Online]. Available: \url{https://web.eecs.utk.edu/~jplank/plank/papers/CS-13-704.html}
+
+\end{thebibliography}
+
+\end{document}
