@@ -1,0 +1,2 @@
+implementation,m,s,w,stripe_mib,threads,effective_threads,trial,order_position,variants,seconds,data_MiB_s,checksum,logical_mult_xors,c_multiply,used_partitioning,kernel_seconds_sum,measurement,status
+gpu_scalar,2,1,8,32,0,0,1,1,1,0.036540463,762.853,6780352f4a591f1b,768,0.517321,1,0.141683359,profiled,PASS

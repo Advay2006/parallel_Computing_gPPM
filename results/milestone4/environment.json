@@ -1,0 +1,173 @@
+{
+  "started_utc": "2026-11-15T05:09:45.848186+00:00",
+  "trial_order_seed": 20261115,
+  "data_seed": "0x243f6a88",
+  "warmups_per_variant_and_configuration": 1,
+  "trials_per_variant_and_configuration": 10,
+  "OMP_DYNAMIC": "FALSE",
+  "OMP_PROC_BIND": "unset",
+  "OMP_PLACES": "unset",
+  "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21
+  ],
+  "system": [
+    {
+      "command": [
+        "uname",
+        "-a"
+      ],
+      "returncode": 0,
+      "output": "Linux arelius-Yoga-Pro-9-16IMH9 6.8.0-149-generic #149~22.04.1-Ubuntu SMP PREEMPT_DYNAMIC Wed Oct 28 20:58:45 UTC  x86_64 x86_64 x86_64 GNU/Linux\n"
+    },
+    {
+      "command": [
+        "lscpu"
+      ],
+      "returncode": 0,
+      "output": "Architecture:                            x86_64\nCPU op-mode(s):                          32-bit, 64-bit\nAddress sizes:                           46 bits physical, 48 bits virtual\nByte Order:                              Little Endian\nCPU(s):                                  22\nOn-line CPU(s) list:                     0-21\nVendor ID:                               GenuineIntel\nModel name:                              Intel(R) Core(TM) Ultra 9 185H\nCPU family:                              6\nModel:                                   170\nThread(s) per core:                      2\nCore(s) per socket:                      16\nSocket(s):                               1\nStepping:                                4\nCPU max MHz:                             5100.0000\nCPU min MHz:                             400.0000\nBogoMIPS:                                6144.00\nFlags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb intel_ppin ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb intel_pt sha_ni xsaveopt xsavec xgetbv1 xsaves split_lock_detect user_shstk avx_vnni dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp hwp_pkg_req hfi vnmi umip pku ospke waitpkg gfni vaes vpclmulqdq tme rdpid bus_lock_detect movdiri movdir64b fsrm md_clear serialize pconfig arch_lbr ibt flush_l1d arch_capabilities ibpb_exit_to_user\nVirtualization:                          VT-x\nL1d cache:                               544 KiB (14 instances)\nL1i cache:                               896 KiB (14 instances)\nL2 cache:                                18 MiB (9 instances)\nL3 cache:                                24 MiB (1 instance)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0-21\nVulnerability Gather data sampling:      Not affected\nVulnerability Indirect target selection: Not affected\nVulnerability Itlb multihit:             Not affected\nVulnerability L1tf:                      Not affected\nVulnerability Mds:                       Not affected\nVulnerability Meltdown:                  Not affected\nVulnerability Mmio stale data:           Not affected\nVulnerability Reg file data sampling:    Not affected\nVulnerability Retbleed:                  Not affected\nVulnerability Spec rstack overflow:      Not affected\nVulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS Not affected; BHI BHI_DIS_S\nVulnerability Srbds:                     Not affected\nVulnerability Tsa:                       Not affected\nVulnerability Tsx async abort:           Not affected\nVulnerability Vmscape:                   Mitigation; IBPB before exit to userspace\n"
+    },
+    {
+      "command": [
+        "gcc",
+        "--version"
+      ],
+      "returncode": 0,
+      "output": "gcc (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0\nCopyright (C) 2021 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
+    },
+    {
+      "command": [
+        "nvidia-smi"
+      ],
+      "returncode": 0,
+      "output": "Sun Nov 15 10:39:47 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 580.178.04             Driver Version: 580.178.04     CUDA Version: 13.0     |\n+-----------------------------------------+------------------------+----------------------+\n| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  NVIDIA GeForce RTX 4050 ...    Off |   00000000:01:00.0 Off |                  N/A |\n| N/A   54C    P3              9W /   55W |      12MiB /   6141MiB |      8%      Default |\n|                                         |                        |                  N/A |\n+-----------------------------------------+------------------------+----------------------+\n\n+-----------------------------------------------------------------------------------------+\n| Processes:                                                                              |\n|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |\n|        ID   ID                                                               Usage      |\n|=========================================================================================|\n|    0   N/A  N/A            2511      G   /usr/bin/gnome-shell                      1MiB |\n+-----------------------------------------------------------------------------------------+\n"
+    },
+    {
+      "command": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "returncode": 0,
+      "output": "a8a8b1e8c4c3e63022db5e3a72a8787b19026309\n"
+    },
+    {
+      "command": [
+        "git",
+        "status",
+        "--short"
+      ],
+      "returncode": 0,
+      "output": " M Makefile\n M docs/Milestone3_IEEE/main.pdf\n M docs/Milestone3_IEEE/main.tex\n?? scripts/profile_milestone4.py\n?? scripts/run_milestone4.py\n?? src/milestone4/\n"
+    },
+    {
+      "command": [
+        "perf",
+        "stat",
+        "-e",
+        "cycles,instructions",
+        "--",
+        "true"
+      ],
+      "returncode": 255,
+      "output": "Error:\nAccess to performance monitoring and observability operations is limited.\nConsider adjusting /proc/sys/kernel/perf_event_paranoid setting to open\naccess to performance monitoring and observability operations for processes\nwithout CAP_PERFMON, CAP_SYS_PTRACE or CAP_SYS_ADMIN Linux capability.\nMore information can be found at 'Perf events and tool security' document:\nhttps://www.kernel.org/doc/html/latest/admin-guide/perf-security.html\nperf_event_paranoid setting is 4:\n  -1: Allow use of (almost) all events by all users\n      Ignore mlock limit after perf_event_mlock_kb without CAP_IPC_LOCK\n>= 0: Disallow raw and ftrace function tracepoint access\n>= 1: Disallow CPU event access\n>= 2: Disallow kernel profiling\nTo make the adjusted perf_event_paranoid setting permanent preserve it\nin /etc/sysctl.conf (e.g. kernel.perf_event_paranoid = <setting>)\n"
+    }
+  ],
+  "source_sha256": {
+    "src/milestone3/benchmark.c": "3281466262471e9479cc9d8c1637a646adbb2b90a03ca702d1e19ec448da0455",
+    "src/milestone3/codec.c": "2390c9d9282fffebd332bf4c9520163e2c9792fe6977385e41a402fc3d5680c2",
+    "src/milestone3/codec.h": "da57ea618885ee173e2b765ced8a2e3b0167abf993c29628ce9abaa7bf9c09c6",
+    "src/milestone3/coefficients.c": "1203f3ff3707860b579eefa1e8f1d9ea5813cdc72f4e0eaef8d8f09768fc39ce",
+    "src/milestone3/coefficients.h": "8ed699e90826073dc981675a73b74dedca7d2766194f28e554f74b781bc30490",
+    "src/milestone3/gf.c": "9e5f75f71f8c0e6819de200b7cfeb492b6c18b68db03faf916f0b6618e25d0b1",
+    "src/milestone3/gf.h": "bfee91a39300bf66e52d8df88c5b988c9d040e28413ff829fcbb2cb6c72b5849",
+    "src/milestone3/main.c": "7f46f50fd5cc7874d2f52be92171affc75ebdba5ba7fb19244c9f0ee2207c1f0",
+    "src/milestone3/matrix.c": "33317af248c012775abe8507f42aa5bf536018ef70c4ea8554b725b1d317411c",
+    "src/milestone3/matrix.h": "6b2017913372d1f6e71800c18bc12564c84e923feed9ef0d35fc781836ebc792",
+    "src/milestone3/ppm.c": "14926b2789886ec2e8a93770df791e092258a191c4d0a7049f8c87b8f752cdf0",
+    "src/milestone3/ppm.h": "d0c53ad06d2ec9c866fc834427bd020f1a576f3aad2ed568121300db820668a8",
+    "src/milestone3/ppm_benchmark.c": "a50312ce9a7da9a6a2cc84efe0a9bb176b664ab394382c31c2ad655597b84fa2",
+    "src/milestone3/ppm_sweep.c": "edd5907c16f0f9d170cf98070f11a01a83ca8236bcc1ca42fd317aedb600e68b",
+    "src/milestone3/sd_code.c": "df0d2b23c53900a4c37b78b51a27c2c120417718fbfa06d85656273181247a40",
+    "src/milestone3/sd_code.h": "6e3c7a3a03ed121f8fb6dc8edd8c379ae272ca7f7520f3a7c7e608b1a8dda9e1",
+    "src/milestone3/sweep.c": "2066d666adbf2e3ee5c3901e378d5b64a99168a6d1f527af77bc2d04186d9dfa",
+    "src/milestone_gpu/benchmark.c": "3281466262471e9479cc9d8c1637a646adbb2b90a03ca702d1e19ec448da0455",
+    "src/milestone_gpu/codec.c": "2390c9d9282fffebd332bf4c9520163e2c9792fe6977385e41a402fc3d5680c2",
+    "src/milestone_gpu/codec.h": "da57ea618885ee173e2b765ced8a2e3b0167abf993c29628ce9abaa7bf9c09c6",
+    "src/milestone_gpu/coefficients.c": "1203f3ff3707860b579eefa1e8f1d9ea5813cdc72f4e0eaef8d8f09768fc39ce",
+    "src/milestone_gpu/coefficients.h": "8ed699e90826073dc981675a73b74dedca7d2766194f28e554f74b781bc30490",
+    "src/milestone_gpu/gf.c": "9e5f75f71f8c0e6819de200b7cfeb492b6c18b68db03faf916f0b6618e25d0b1",
+    "src/milestone_gpu/gf.h": "bfee91a39300bf66e52d8df88c5b988c9d040e28413ff829fcbb2cb6c72b5849",
+    "src/milestone_gpu/gpu_backend.cu": "9d2f731fcc659abf4fa34b5f5578d2c0d027db784f8c3554b1797d336c9fdc66",
+    "src/milestone_gpu/gpu_backend.h": "aa21a664c62ef8fb9f5a4319fdbdaa6da6985afb3de93a40fa9f471c668f6f6d",
+    "src/milestone_gpu/gpu_benchmark.c": "e38daab19416977e719969c58701c10fd7989995ec2d0b34fcaa513f1686168f",
+    "src/milestone_gpu/gpu_ppm.c": "959411d721d25bf00d16edbed0f7d3087470370b4b62ae0717372e15d8fba11b",
+    "src/milestone_gpu/gpu_ppm.h": "460df51c90b6a4c3f1561034ab80b6983d2f9bbfa1efcfb48d1210668561f3b9",
+    "src/milestone_gpu/main.c": "7f46f50fd5cc7874d2f52be92171affc75ebdba5ba7fb19244c9f0ee2207c1f0",
+    "src/milestone_gpu/matrix.c": "33317af248c012775abe8507f42aa5bf536018ef70c4ea8554b725b1d317411c",
+    "src/milestone_gpu/matrix.h": "6b2017913372d1f6e71800c18bc12564c84e923feed9ef0d35fc781836ebc792",
+    "src/milestone_gpu/ppm.c": "14926b2789886ec2e8a93770df791e092258a191c4d0a7049f8c87b8f752cdf0",
+    "src/milestone_gpu/ppm.h": "d0c53ad06d2ec9c866fc834427bd020f1a576f3aad2ed568121300db820668a8",
+    "src/milestone_gpu/ppm_benchmark.c": "a50312ce9a7da9a6a2cc84efe0a9bb176b664ab394382c31c2ad655597b84fa2",
+    "src/milestone_gpu/ppm_sweep.c": "edd5907c16f0f9d170cf98070f11a01a83ca8236bcc1ca42fd317aedb600e68b",
+    "src/milestone_gpu/sd_code.c": "df0d2b23c53900a4c37b78b51a27c2c120417718fbfa06d85656273181247a40",
+    "src/milestone_gpu/sd_code.h": "6e3c7a3a03ed121f8fb6dc8edd8c379ae272ca7f7520f3a7c7e608b1a8dda9e1",
+    "src/milestone_gpu/sweep.c": "2066d666adbf2e3ee5c3901e378d5b64a99168a6d1f527af77bc2d04186d9dfa",
+    "src/milestone4/benchmark.c": "c00a360ee8259ed8f5428ab5f4926f39fef5c982d729fd49955bfdeb202dd819"
+  },
+  "runs": [
+    [
+      "./build/m4_benchmark",
+      "--stripe-mib",
+      "32",
+      "--csv",
+      "results/milestone4/final_32mib.csv"
+    ],
+    [
+      "./build/m4_benchmark",
+      "--stripe-mib",
+      "8",
+      "--csv",
+      "results/milestone4/size_8mib.csv",
+      "--m",
+      "2"
+    ],
+    [
+      "./build/m4_benchmark",
+      "--stripe-mib",
+      "128",
+      "--csv",
+      "results/milestone4/size_128mib.csv",
+      "--m",
+      "2"
+    ]
+  ],
+  "finished_utc": "2026-11-15T05:11:51.431295+00:00",
+  "gpu_after": {
+    "command": [
+      "nvidia-smi"
+    ],
+    "returncode": 0,
+    "output": "Sun Nov 15 10:41:51 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 580.178.04             Driver Version: 580.178.04     CUDA Version: 13.0     |\n+-----------------------------------------+------------------------+----------------------+\n| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  NVIDIA GeForce RTX 4050 ...    Off |   00000000:01:00.0 Off |                  N/A |\n| N/A   66C    P3             10W /   55W |      12MiB /   6141MiB |      0%      Default |\n|                                         |                        |                  N/A |\n+-----------------------------------------+------------------------+----------------------+\n\n+-----------------------------------------------------------------------------------------+\n| Processes:                                                                              |\n|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |\n|        ID   ID                                                               Usage      |\n|=========================================================================================|\n|    0   N/A  N/A            2511      G   /usr/bin/gnome-shell                      1MiB |\n+-----------------------------------------------------------------------------------------+\n"
+  }
+}

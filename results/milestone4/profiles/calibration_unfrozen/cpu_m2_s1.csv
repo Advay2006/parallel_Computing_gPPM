@@ -1,0 +1,2 @@
+implementation,m,s,w,stripe_mib,threads,effective_threads,trial,order_position,variants,seconds,data_MiB_s,checksum,logical_mult_xors,c_multiply,used_partitioning,kernel_seconds_sum,measurement,status
+cpu_l3,2,1,8,32,1,1,1,1,1,0.177013174,157.474,6780352f4a591f1b,708,0.000000,1,0.000000000,profiled,PASS

@@ -43,6 +43,12 @@ GPU_C_OBJECTS = $(patsubst $(GPU_DIR)/%.c,$(GPU_OBJ_DIR)/%.o,$(GPU_C_SOURCES))
 GPU_CUDA_OBJECT = $(GPU_OBJ_DIR)/gpu_backend.o
 GPU_TEST = $(BUILD_DIR)/test_gpu
 GPU_CORE_OBJECTS = $(filter-out $(GPU_OBJ_DIR)/gpu_benchmark.o,$(GPU_C_OBJECTS))
+M4_DIR = src/milestone4
+M4_RESULTS_DIR = $(RESULTS_DIR)/milestone4
+M4_BENCH = $(BUILD_DIR)/m4_benchmark
+M4_CPU = $(BUILD_DIR)/m4_benchmark_cpu
+M4_PROFILE_CPU = $(BUILD_DIR)/m4_profile_cpu
+CUDA_ROOT = $(abspath $(dir $(NVCC))/..)
 
 all: $(BIN) $(SWEEP) $(BENCH) $(PPM_SWEEP) $(PPM_BENCH) $(M3_SWEEP) $(M3_BENCH) $(M3_BENCH_SCALAR)
 
@@ -51,6 +57,33 @@ $(BUILD_DIR) $(RESULTS_DIR):
 
 $(GPU_OBJ_DIR) $(GPU_RESULTS_DIR):
 	mkdir -p $@
+
+$(M4_RESULTS_DIR):
+	mkdir -p $@
+
+$(M4_CPU): $(M4_DIR)/benchmark.c $(M3_CORE) $(M3_COEFF) $(M3_HEADERS) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(OMPFLAGS) -I$(M3_DIR) -o $@ $(M4_DIR)/benchmark.c $(M3_CORE) $(M3_COEFF)
+
+$(M4_PROFILE_CPU): $(M4_DIR)/benchmark.c $(M4_DIR)/profile_cpu.c $(M3_CORE) $(M3_COEFF) $(M3_HEADERS) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -g $(OMPFLAGS) -DM4_CALLGRIND -Wl,--wrap=gf_cost_c -I$(M3_DIR) -o $@ $(M4_DIR)/benchmark.c $(M4_DIR)/profile_cpu.c $(M3_CORE) $(M3_COEFF)
+
+$(GPU_OBJ_DIR)/m4_benchmark.o: $(M4_DIR)/benchmark.c $(GPU_HEADERS) | $(GPU_OBJ_DIR)
+	$(CC) $(CFLAGS) $(OMPFLAGS) -DM4_WITH_CUDA -I$(GPU_DIR) -I$(CUDA_ROOT)/include -c $< -o $@
+
+$(M4_BENCH): $(GPU_CORE_OBJECTS) $(GPU_CUDA_OBJECT) $(GPU_OBJ_DIR)/m4_benchmark.o
+	$(NVCC) -o $@ $^ -Xcompiler -fopenmp
+
+m4-benchmark: $(M4_BENCH) | $(M4_RESULTS_DIR)
+	$(PYTHON) scripts/run_milestone4.py
+
+m4-analyze:
+	$(PYTHON) scripts/analyze_milestone4.py
+
+m4-profile: $(M4_BENCH) $(M4_PROFILE_CPU) | $(M4_RESULTS_DIR)
+	$(PYTHON) scripts/profile_milestone4.py
+
+m4-package:
+	$(PYTHON) scripts/package_milestone4.py
 
 $(BIN): $(M1_CORE) $(M1_DIR)/main.c $(M1_HEADERS) | $(BUILD_DIR)
 	$(CC) -I$(M1_DIR) $(CFLAGS) -o $@ $(M1_CORE) $(M1_DIR)/main.c
@@ -160,4 +193,4 @@ test: $(TEST_GF) $(TEST_SD) $(TEST_COEFF) $(TEST_PPM) $(TEST_M3)
 clean:
 	rm -rf $(BUILD_DIR)
 
-.PHONY: all run sweep benchmark ppm-sweep ppm-benchmark m3-sweep m3-benchmark m3-plots gpu-test gpu-benchmark gpu-plots plots ppm-test m3-test test clean
+.PHONY: all run sweep benchmark ppm-sweep ppm-benchmark m3-sweep m3-benchmark m3-plots gpu-test gpu-benchmark gpu-plots plots ppm-test m3-test test m4-benchmark m4-profile m4-analyze m4-package clean

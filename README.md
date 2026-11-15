@@ -1,4 +1,4 @@
-# gPPM — Milestones 1-3: Sequential Baseline, PPM, and Cost Selection
+# gPPM — CPU/GPU Recovery and Milestone 4 Evaluation
 
 Reference implementation of the traditional sequential erasure-code baseline
 and the Partitioned and Parallel Matrix (PPM) decoder described in Sections
@@ -17,6 +17,9 @@ contains a separate cost-selected gPPM path and SIMD region kernels for the
 supported fields.
 
 Project plan and milestone breakdown: [`Context.md`](Context.md).
+Final IEEE research paper: [`docs/Milestone3_IEEE/main.pdf`](docs/Milestone3_IEEE/main.pdf).
+Final profiling, scaling evidence and reproduction instructions:
+[`results/milestone4/README.md`](results/milestone4/README.md).
 Standalone Milestone 1 report: [`Milestone_1_Report.pdf`](docs/Milestone_1_Report.pdf).
 Original literature review with the validated baseline results appended:
 [`finalfi_with_baseline_results.pdf`](docs/finalfi_with_baseline_results.pdf).
@@ -41,6 +44,9 @@ make m3-plots      # run scripts/plot_milestone3.py; output in results/milestone
 make gpu-test      # CUDA correctness run (requires CUDA toolkit)
 make gpu-benchmark # GPU scalar/optimized vs CPU M3 comparison
 make gpu-plots     # GPU comparison plots in results/milestone_gpu/
+make m4-benchmark  # final CPU/GPU and stripe-size benchmark (see M4 README first)
+make m4-profile    # recovery-only Callgrind and Nsight traces
+make m4-analyze    # validate M4 measurements and generate summaries/plots
 make plots         # presentation-ready PNG and SVG charts in results/plots/
 make clean
 ```

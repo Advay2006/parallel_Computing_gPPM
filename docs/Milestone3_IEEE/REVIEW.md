@@ -1,4 +1,9 @@
-# Adversarial review of the final paper
+# Adversarial review of the earlier paper
+
+**Historical review:** This document covers the earlier Milestone 3 and initial
+GPU-comparison paper. The final Milestone 4 paper adds a same-experiment CPU
+thread sweep, multiple stripe sizes and profiling. See the subsequent
+[Milestone 4 review](../../results/milestone4/REVIEW.md) for its audit.
 
 Reviewed 1 November 2026 by an independent AI reviewer, with a second pass
 after corrections. This is an internal consistency audit, not formal peer

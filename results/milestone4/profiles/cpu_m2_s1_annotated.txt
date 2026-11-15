@@ -1,0 +1,611 @@
+--------------------------------------------------------------------------------
+Profile data file '/home/arelius/projects/parallel_Computing_gPPM/results/milestone4/profiles/cpu_m2_s1.callgrind.1' (creator: callgrind-3.18.1)
+--------------------------------------------------------------------------------
+I1 cache: 
+D1 cache: 
+LL cache: 
+Timerange: Basic block 0 - 15382992
+Trigger: Client Request
+Profiled target:  ./build/m4_profile_cpu --variant cpu --threads 1 --m 2 --s 1 --trials 1 --profile callgrind --csv /home/arelius/projects/parallel_Computing_gPPM/results/milestone4/profiles/cpu_m2_s1.csv (PID 103143, part 1)
+Events recorded:  Ir
+Events shown:     Ir
+Event sort order: Ir
+Thresholds:       99
+Include dirs:     
+User annotated:   
+Auto-annotation:  on
+
+--------------------------------------------------------------------------------
+Ir                   
+--------------------------------------------------------------------------------
+100,886,475 (100.0%)  PROGRAM TOTALS
+
+--------------------------------------------------------------------------------
+Ir                   file:function
+--------------------------------------------------------------------------------
+44,483,646 (44.09%)  /usr/lib/gcc/x86_64-linux-gnu/11/include/emmintrin.h:mult_xors_gf8_ssse3
+17,793,024 (17.64%)  /usr/lib/gcc/x86_64-linux-gnu/11/include/tmmintrin.h:mult_xors_gf8_ssse3
+13,433,277 (13.32%)  src/milestone3/gf.c:mult_xors_gf8_ssse3 [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+ 9,216,000 ( 9.14%)  /usr/lib/gcc/x86_64-linux-gnu/11/include/emmintrin.h:xor_region_ssse3
+ 8,773,166 ( 8.70%)  ./string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S:__memset_avx2_unaligned_erms [/usr/lib/x86_64-linux-gnu/libc.so.6]
+ 5,531,175 ( 5.48%)  src/milestone3/gf.c:xor_region_ssse3 [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+   570,809 ( 0.57%)  src/milestone3/matrix.c:mat_mul [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+   240,546 ( 0.24%)  src/milestone3/codec.c:ec_split [/home/arelius/projects/parallel_Computing_gPPM/build/m4_profile_cpu]
+
+--------------------------------------------------------------------------------
+-- Auto-annotated source: src/milestone3/matrix.c
+--------------------------------------------------------------------------------
+Ir               
+
+      .           #include "matrix.h"
+      .           #include <stdio.h>
+      .           #include <stdlib.h>
+      .           #include <string.h>
+      .           
+      .           int mat_alloc(gf_mat *M, int rows, int cols)
+    250 ( 0.00%)  {
+      .               size_t count;
+      .           
+    135 ( 0.00%)      M->rows = M->cols = 0;
+     67 ( 0.00%)      M->e = NULL;
+    689 ( 0.00%)      if (rows <= 0 || cols <= 0 || (size_t)rows > SIZE_MAX / (size_t)cols)
+      .                   return -1;
+    135 ( 0.00%)      count = (size_t)rows * (size_t)cols;
+      .               if (count > SIZE_MAX / sizeof *M->e) return -1;
+    320 ( 0.00%)      M->e = calloc(count, sizeof *M->e);
+ 88,496 ( 0.09%)  => ???:0x000000000010a380 (50x)
+    219 ( 0.00%)      if (!M->e) return -1;
+    169 ( 0.00%)      M->rows = rows;
+    101 ( 0.00%)      M->cols = cols;
+     50 ( 0.00%)      return 0;
+    200 ( 0.00%)  }
+      .           
+      .           void mat_free(gf_mat *M)
+    252 ( 0.00%)  {
+    202 ( 0.00%)      free(M->e);
+  1,897 ( 0.00%)  => ???:0x000000000010a260 (17x)
+    168 ( 0.00%)      M->e = NULL; M->rows = M->cols = 0;
+    168 ( 0.00%)  }
+      .           
+      .           void mat_print(const gf_mat *M, const char *name)
+      .           {
+      .               int i, j;
+      .               printf("%s (%dx%d):\n", name, M->rows, M->cols);
+      .               for (i = 0; i < M->rows; i++) {
+      .                   printf("  [");
+      .                   for (j = 0; j < M->cols; j++) printf("%4u", MAT(M, i, j));
+      .                   printf(" ]\n");
+      .               }
+      .           }
+      .           
+      .           long mat_nonzeros(const gf_mat *M)
+     51 ( 0.00%)  {
+    306 ( 0.00%)      long c = 0; size_t i, N = (size_t)M->rows * M->cols;
+163,323 ( 0.16%)      for (i = 0; i < N; i++) if (M->e[i] != 0) c++;
+      .               return c;
+    102 ( 0.00%)  }
+      .           
+      .           long mat_non_ones(const gf_mat *M)
+     51 ( 0.00%)  {
+    306 ( 0.00%)      long c = 0; size_t i, N = (size_t)M->rows * M->cols;
+163,323 ( 0.16%)      for (i = 0; i < N; i++) if (M->e[i] > 1) c++;
+      .               return c;
+    102 ( 0.00%)  }
+      .           
+      .           int mat_mul(const gf_mat *A, const gf_mat *B, const gf_t *gf, gf_mat *out)
+    153 ( 0.00%)  {
+      .               int i, j, k;
+      .           
+    289 ( 0.00%)      if (!A || !B || !gf || !out || !A->e || !B->e ||
+      .                   A->cols != B->rows)
+      .                   return -1;
+     51 ( 0.00%)      if (mat_alloc(out, A->rows, B->cols) != 0) return -1;
+      .           
+    317 ( 0.00%)      for (i = 0; i < A->rows; i++)
+  3,672 ( 0.00%)          for (k = 0; k < A->cols; k++) {
+  5,790 ( 0.01%)              uint32_t a = MAT(A, i, k);
+  2,316 ( 0.00%)              if (a == 0) continue;
+159,834 ( 0.16%)              for (j = 0; j < B->cols; j++) {
+264,870 ( 0.26%)                  uint32_t b = MAT(B, k, j);
+133,092 ( 0.13%)                  if (b != 0) MAT(out, i, j) ^= gf_mul(gf, a, b);
+      .                       }
+      .                   }
+     17 ( 0.00%)      return 0;
+    136 ( 0.00%)  }
+      .           
+      .           int mat_invert(const gf_mat *A, const gf_t *gf, gf_mat *out)
+    153 ( 0.00%)  {
+     17 ( 0.00%)      int n = A->rows, col, i, j, piv;
+      .               gf_mat W;               /* [A | I], n x 2n */
+      .           
+     34 ( 0.00%)      if (A->rows != A->cols) return -1;
+     17 ( 0.00%)      if (mat_alloc(&W, n, 2 * n) != 0) return -1;
+      .           
+    668 ( 0.00%)      for (i = 0; i < n; i++) {
+    500 ( 0.00%)          for (j = 0; j < n; j++) MAT(&W, i, j) = MAT(A, i, j);
+  1,551 ( 0.00%)  => ???:0x000000000010a3c0 (66x)
+     66 ( 0.00%)          MAT(&W, i, n + i) = 1;
+      .               }
+      .           
+    547 ( 0.00%)      for (col = 0; col < n; col++) {
+      .                   /* find a pivot */
+      .                   piv = -1;
+    720 ( 0.00%)          for (i = col; i < n; i++)
+  1,836 ( 0.00%)              if (MAT(&W, i, col) != 0) { piv = i; break; }
+      .                   if (piv < 0) { mat_free(&W); return -1; }   /* singular */
+      .           
+    162 ( 0.00%)          if (piv != col)
+  2,985 ( 0.00%)              for (j = 0; j < 2 * n; j++) {
+    990 ( 0.00%)                  uint32_t t = MAT(&W, col, j);
+  1,980 ( 0.00%)                  MAT(&W, col, j) = MAT(&W, piv, j);
+    990 ( 0.00%)                  MAT(&W, piv, j) = t;
+      .                       }
+      .           
+      .                   /* normalise the pivot row */
+    330 ( 0.00%)          if (MAT(&W, col, col) != 1) {
+    441 ( 0.00%)              uint32_t inv = gf_inv(gf, MAT(&W, col, col));
+    588 ( 0.00%)  => /home/arelius/projects/parallel_Computing_gPPM/src/milestone3/gf.c:gf_inv (49x)
+  6,699 ( 0.01%)              for (j = 0; j < 2 * n; j++)
+  4,500 ( 0.00%)                  MAT(&W, col, j) = gf_mul(gf, MAT(&W, col, j), inv);
+      .                   }
+      .           
+      .                   /* eliminate the column from every other row */
+  4,764 ( 0.00%)          for (i = 0; i < n; i++) {
+  1,158 ( 0.00%)              uint32_t f = MAT(&W, i, col);
+  4,500 ( 0.00%)              if (i == col || f == 0) continue;
+ 25,578 ( 0.03%)              for (j = 0; j < 2 * n; j++)
+ 16,944 ( 0.02%)                  MAT(&W, i, j) ^= gf_mul(gf, f, MAT(&W, col, j));
+      .                   }
+      .               }
+      .           
+      .               if (mat_alloc(out, n, n) != 0) { mat_free(&W); return -1; }
+    364 ( 0.00%)      for (i = 0; i < n; i++)
+    330 ( 0.00%)          for (j = 0; j < n; j++) MAT(out, i, j) = MAT(&W, i, n + j);
+  1,551 ( 0.00%)  => ???:0x000000000010a3c0 (66x)
+      .           
+      .               mat_free(&W);
+     34 ( 0.00%)      return 0;
+    136 ( 0.00%)  }
+
+--------------------------------------------------------------------------------
+-- Auto-annotated source: /usr/lib/gcc/x86_64-linux-gnu/11/include/tmmintrin.h
+--------------------------------------------------------------------------------
+Ir                  
+
+-- line 130 ----------------------------------------
+         .           _mm_mulhrs_pi16 (__m64 __X, __m64 __Y)
+         .           {
+         .             return (__m64) __builtin_ia32_pmulhrsw ((__v4hi)__X, (__v4hi)__Y);
+         .           }
+         .           
+         .           extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+         .           _mm_shuffle_epi8 (__m128i __X, __m128i __Y)
+         .           {
+17,793,024 (17.64%)    return (__m128i) __builtin_ia32_pshufb128 ((__v16qi)__X, (__v16qi)__Y);
+         .           }
+         .           
+         .           extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+         .           _mm_shuffle_pi8 (__m64 __X, __m64 __Y)
+         .           {
+         .             return (__m64) __builtin_ia32_pshufb ((__v8qi)__X, (__v8qi)__Y);
+         .           }
+         .           
+-- line 146 ----------------------------------------
+
+--------------------------------------------------------------------------------
+-- Auto-annotated source: src/milestone3/codec.c
+--------------------------------------------------------------------------------
+Ir               
+
+      .           #include "codec.h"
+      .           #include <stdlib.h>
+      .           #include <string.h>
+      .           #include <math.h>
+      .           #include <omp.h>
+      .           
+      .           int ec_split(const gf_mat *H, const int *faulty, int nf,
+      .                        gf_mat *F, gf_mat *S, int *surviving)
+    255 ( 0.00%)  {
+     34 ( 0.00%)      const int C = H->cols, R = H->rows;
+      .               int i, j, k, ns;
+      .               char *is_faulty;
+      .           
+      .               memset(F, 0, sizeof *F);
+      .               memset(S, 0, sizeof *S);
+     85 ( 0.00%)      is_faulty = calloc((size_t)C, 1);
+  5,195 ( 0.01%)  => ???:0x000000000010a380 (17x)
+     51 ( 0.00%)      if (!is_faulty) return -1;
+    368 ( 0.00%)      for (k = 0; k < nf; k++) {
+    528 ( 0.00%)          if (faulty[k] < 0 || faulty[k] >= C || is_faulty[faulty[k]]) {
+      .                       free(is_faulty); return -1;          /* out of range or duplicate */
+      .                   }
+     66 ( 0.00%)          is_faulty[faulty[k]] = 1;
+      .               }
+      .           
+     34 ( 0.00%)      ns = 0;
+ 34,618 ( 0.03%)      for (j = 0; j < C; j++) if (!is_faulty[j]) surviving[ns++] = j;
+      .           
+    170 ( 0.00%)      if (mat_alloc(F, R, nf) != 0) {
+  9,132 ( 0.01%)  => /home/arelius/projects/parallel_Computing_gPPM/src/milestone3/matrix.c:mat_alloc (17x)
+      .                   free(is_faulty); return -1;
+      .               }
+    153 ( 0.00%)      if (mat_alloc(S, R, ns) != 0) {
+ 40,641 ( 0.04%)  => /home/arelius/projects/parallel_Computing_gPPM/src/milestone3/matrix.c:mat_alloc (17x)
+      .                   mat_free(F); free(is_faulty); return -1;
+      .               }
+    402 ( 0.00%)      for (i = 0; i < R; i++) {
+ 14,292 ( 0.01%)          for (k = 0; k < nf; k++) MAT(F, i, k) = MAT(H, i, faulty[k]);
+189,252 ( 0.19%)          for (k = 0; k < ns; k++) MAT(S, i, k) = MAT(H, i, surviving[k]);
+      .               }
+      .           
+     51 ( 0.00%)      free(is_faulty);
+  2,505 ( 0.00%)  => ???:0x000000000010a260 (17x)
+     34 ( 0.00%)      return ns;
+    153 ( 0.00%)  }
+      .           
+      .           int ec_decode_normal(const gf_mat *Finv, const gf_mat *S,
+      .                                const int *faulty, const int *surviving,
+      .                                uint8_t *stripe, size_t sector_bytes, const gf_t *gf)
+    240 ( 0.00%)  {
+     32 ( 0.00%)      const int R  = S->rows;      /* R_H                       */
+     32 ( 0.00%)      const int ns = S->cols;      /* surviving blocks          */
+     32 ( 0.00%)      const int nf = Finv->rows;   /* faulty blocks (= R here)  */
+      .               uint8_t *T;                  /* R intermediate sectors    */
+      .               int i, j;
+      .           
+     96 ( 0.00%)      T = calloc((size_t)R, sector_bytes);
+4,329,546 ( 4.29%)  => ???:0x000000000010a380 (16x)
+     32 ( 0.00%)      if (!T) return -1;
+      .           
+      .               /* T = S * BS.  Cost: u(S) calls. */
+    388 ( 0.00%)      for (i = 0; i < R; i++)
+ 25,269 ( 0.03%)          for (j = 0; j < ns; j++) {
+ 41,895 ( 0.04%)              uint32_t a = MAT(S, i, j);
+ 16,758 ( 0.02%)              if (a == 0) continue;              /* u() counts nonzeros only */
+  5,625 ( 0.01%)              mult_XORs(stripe + (size_t)surviving[j] * sector_bytes,
+80,995,143 (80.28%)  => /home/arelius/projects/parallel_Computing_gPPM/src/milestone3/gf.c:mult_XORs (699x)
+      .                                 T + (size_t)i * sector_bytes, a, sector_bytes, gf);
+      .                   }
+      .           
+      .               /* BF = Finv * T.  Cost: u(Finv) calls.  Computed only after all of T is
+      .                * final, so overwriting the faulty sectors in place is safe. */
+    275 ( 0.00%)      for (i = 0; i < nf; i++) {
+    132 ( 0.00%)          uint8_t *dst = stripe + (size_t)faulty[i] * sector_bytes;
+      .                   memset(dst, 0, sector_bytes);
+    804 ( 0.00%)          for (j = 0; j < R; j++) {
+    345 ( 0.00%)              uint32_t a = MAT(Finv, i, j);
+    138 ( 0.00%)              if (a == 0) continue;
+    345 ( 0.00%)              mult_XORs(T + (size_t)j * sector_bytes, dst, a, sector_bytes, gf);
+9,643,233 ( 9.56%)  => /home/arelius/projects/parallel_Computing_gPPM/src/milestone3/gf.c:mult_XORs (69x)
+      .                   }
+      .               }
+      .           
+     32 ( 0.00%)      free(T);
+  2,064 ( 0.00%)  => ???:0x000000000010a260 (16x)
+     16 ( 0.00%)      return 0;
+    128 ( 0.00%)  }
+      .           
+      .           int ec_decode_normal_parallel(const gf_mat *Finv, const gf_mat *S,
+      .                                         const int *faulty, const int *surviving,
+      .                                         uint8_t *stripe, size_t sector_bytes,
+      .                                         const gf_t *gf, int requested_threads,
+      .                                         int *actual_threads)
+     19 ( 0.00%)  {
+      .               int R, ns, nf;
+      .               size_t symbol_bytes, symbols;
+      .               uint8_t *T;
+      .               int threads, observed_threads = 1;
+      .           
+      3 ( 0.00%)      if (actual_threads) *actual_threads = 1;
+     16 ( 0.00%)      if (!Finv || !S || !faulty || !surviving || !stripe || !gf ||
+      3 ( 0.00%)          requested_threads <= 0 || Finv->rows != Finv->cols ||
+      7 ( 0.00%)          Finv->cols != S->rows || sector_bytes == 0 ||
+      4 ( 0.00%)          (gf->w != 8 && gf->w != 16 && gf->w != 32))
+      .                   return -1;
+      .               R = S->rows;
+      .               ns = S->cols;
+      .               nf = Finv->rows;
+      3 ( 0.00%)      symbol_bytes = (size_t)(gf->w / 8);
+      3 ( 0.00%)      symbols = sector_bytes / symbol_bytes;
+      2 ( 0.00%)      if (sector_bytes % symbol_bytes != 0) return -1;
+      2 ( 0.00%)      if (requested_threads == 1 || symbols < 2)
+     10 ( 0.00%)          return ec_decode_normal(Finv, S, faulty, surviving, stripe,
+40,008,310 (39.66%)  => src/milestone3/codec.c:ec_decode_normal (1x)
+      .                                          sector_bytes, gf);
+      .           
+      .               threads = requested_threads;
+      .               if ((size_t)threads > symbols) threads = (int)symbols;
+      .               T = calloc((size_t)R, sector_bytes);
+      .               if (!T) return -1;
+      .           
+      .               gf_count_reset();
+-- line 113 ----------------------------------------
+-- line 146 ----------------------------------------
+      .               }
+      .           
+      .               free(T);
+      .               /* Count logical full-region operations once, not one chunk per worker. */
+      .               gf_count_reset();
+      .               gf_count_add((uint64_t)mat_nonzeros(S) + (uint64_t)mat_nonzeros(Finv));
+      .               if (actual_threads) *actual_threads = observed_threads;
+      .               return 0;
+      7 ( 0.00%)  }
+      .           
+      .           int ec_decode_matrix_first(const gf_mat *Finv, const gf_mat *S,
+      .                                      const int *faulty, const int *surviving,
+      .                                      uint8_t *stripe, size_t sector_bytes,
+      .                                      const gf_t *gf)
+      .           {
+      .               gf_mat G = { 0 };
+      .               int i, j;
+-- line 162 ----------------------------------------
+-- line 180 ----------------------------------------
+      .           
+      .               mat_free(&G);
+      .               return 0;
+      .           }
+      .           
+      .           int ec_choose_sequence(const gf_mat *Finv, const gf_mat *S, const gf_t *gf,
+      .                                  double c, decode_sequence_t *sequence,
+      .                                  double *estimated_cost)
+    204 ( 0.00%)  {
+     34 ( 0.00%)      gf_mat G = { 0 };
+      .               double normal_cost, matrix_cost;
+      .           
+    323 ( 0.00%)      if (!Finv || !S || !gf || !sequence || !estimated_cost ||
+    221 ( 0.00%)          !Finv->e || !S->e || c < 0.0 || !isfinite(c) ||
+     51 ( 0.00%)          Finv->rows != Finv->cols || Finv->cols != S->rows)
+      .                   return -1;
+      .           
+    221 ( 0.00%)      normal_cost = (double)mat_nonzeros(S) + (double)mat_nonzeros(Finv) +
+ 84,888 ( 0.08%)  => /home/arelius/projects/parallel_Computing_gPPM/src/milestone3/matrix.c:mat_nonzeros (34x)
+    187 ( 0.00%)                    c * ((double)mat_non_ones(S) + (double)mat_non_ones(Finv));
+ 84,888 ( 0.08%)  => /home/arelius/projects/parallel_Computing_gPPM/src/milestone3/matrix.c:mat_non_ones (34x)
+    153 ( 0.00%)      if (mat_mul(Finv, S, gf, &G) != 0) return -1;
+648,532 ( 0.64%)  => /home/arelius/projects/parallel_Computing_gPPM/src/milestone3/matrix.c:mat_mul (17x)
+    204 ( 0.00%)      matrix_cost = (double)mat_nonzeros(&G) + c * (double)mat_non_ones(&G);
+ 78,894 ( 0.08%)  => /home/arelius/projects/parallel_Computing_gPPM/src/milestone3/matrix.c:mat_non_ones (17x)
+ 78,894 ( 0.08%)  => /home/arelius/projects/parallel_Computing_gPPM/src/milestone3/matrix.c:mat_nonzeros (17x)
+     51 ( 0.00%)      if (matrix_cost < normal_cost) {
+     17 ( 0.00%)          *sequence = DECODE_MATRIX_FIRST;
+     34 ( 0.00%)          *estimated_cost = matrix_cost;
+      .               } else {
+      .                   *sequence = DECODE_NORMAL;
+      .                   *estimated_cost = normal_cost;
+      .               }
+     34 ( 0.00%)      mat_free(&G);
+  2,746 ( 0.00%)  => /home/arelius/projects/parallel_Computing_gPPM/src/milestone3/matrix.c:mat_free (17x)
+      .               return 0;
+    204 ( 0.00%)  }
+      .           
+      .           int ec_recover(const gf_mat *H, const int *faulty, int nf,
+      .                          uint8_t *stripe, size_t sector_bytes, const gf_t *gf,
+      .                          decode_stats_t *stats)
+      .           {
+      .               gf_mat F = { 0 }, S = { 0 }, Finv = { 0 };
+      .               int   *surviving, ns, rc = -1;
+      .           
+-- line 218 ----------------------------------------
+
+--------------------------------------------------------------------------------
+-- Auto-annotated source: src/milestone3/gf.c
+--------------------------------------------------------------------------------
+Ir                  
+
+-- line 175 ----------------------------------------
+         .                       plane = gf->split8 + (size_t)(bi * 4 + bj) * SPLIT_SIZE;
+         .                       product ^= plane[(av << 8) | bv];
+         .                   }
+         .               }
+         .               return product;
+         .           }
+         .           
+         .           uint32_t gf_inv(const gf_t *gf, uint32_t a)
+        49 ( 0.00%)  {
+        98 ( 0.00%)      assert(a != 0);
+        98 ( 0.00%)      if (gf->w == 32) return gf_pow(gf, a, UINT32_MAX - 1U);
+       294 ( 0.00%)      return gf->expt[gf->nz - gf->logt[a]];
+        49 ( 0.00%)  }
+         .           
+         .           uint32_t gf_div(const gf_t *gf, uint32_t a, uint32_t b)
+         .           {
+         .               assert(b != 0);
+         .               if (a == 0) return 0;
+         .               if (gf->w == 32) return gf_mul(gf, a, gf_inv(gf, b));
+         .               return gf->expt[gf->logt[a] + gf->nz - gf->logt[b]];
+         .           }
+-- line 195 ----------------------------------------
+-- line 267 ----------------------------------------
+         .           }
+         .           
+         .           #if GF_SIMD_BUILD
+         .           __attribute__((target("ssse3")))
+         .           static void xor_region_ssse3(const uint8_t *src, uint8_t *dst, size_t nbytes)
+         .           {
+         .               size_t i = 0;
+         .           
+ 5,530,500 ( 5.48%)      for (; i + 16 <= nbytes; i += 16) {
+         .                   __m128i x = _mm_loadu_si128((const __m128i *)(src + i));
+         .                   __m128i y = _mm_loadu_si128((const __m128i *)(dst + i));
+         .                   _mm_storeu_si128((__m128i *)(dst + i), _mm_xor_si128(x, y));
+         .               }
+       450 ( 0.00%)      for (; i < nbytes; i++) dst[i] ^= src[i];
+       225 ( 0.00%)  }
+         .           
+         .           __attribute__((target("ssse3")))
+         .           static void mult_xors_gf8_ssse3(const uint8_t *src, uint8_t *dst,
+         .                                           uint8_t coefficient, size_t nbytes,
+         .                                           const gf_t *gf)
+     8,145 ( 0.01%)  {
+         .               uint8_t lo[16], hi[16];
+         .               __m128i lo_table, hi_table, mask = _mm_set1_epi8(0x0f);
+         .               size_t i = 0;
+         .               int j;
+         .           
+    26,064 ( 0.03%)      for (j = 0; j < 16; j++) {
+    26,064 ( 0.03%)          lo[j] = (uint8_t)gf_mul(gf, coefficient, (uint32_t)j);
+    16,833 ( 0.02%)          hi[j] = (uint8_t)gf_mul(gf, coefficient, (uint32_t)(j << 4));
+         .               }
+         .               lo_table = _mm_loadu_si128((const __m128i *)lo);
+         .               hi_table = _mm_loadu_si128((const __m128i *)hi);
+13,346,940 (13.23%)      for (; i + 16 <= nbytes; i += 16) {
+         .                   __m128i x = _mm_loadu_si128((const __m128i *)(src + i));
+         .                   __m128i y = _mm_loadu_si128((const __m128i *)(dst + i));
+         .                   __m128i low = _mm_and_si128(x, mask);
+         .                   __m128i high = _mm_and_si128(_mm_srli_epi16(x, 4), mask);
+         .                   __m128i product = _mm_xor_si128(_mm_shuffle_epi8(lo_table, low),
+         .                                                  _mm_shuffle_epi8(hi_table, high));
+         .                   _mm_storeu_si128((__m128i *)(dst + i), _mm_xor_si128(y, product));
+         .               }
+     3,258 ( 0.00%)      for (; i < nbytes; i++) dst[i] ^= (uint8_t)gf_mul(gf, coefficient, src[i]);
+     5,973 ( 0.01%)  }
+         .           
+         .           __attribute__((target("avx2")))
+         .           static void xor_region_avx2(const uint8_t *src, uint8_t *dst, size_t nbytes)
+         .           {
+         .               size_t i = 0;
+         .           
+         .               for (; i + 32 <= nbytes; i += 32) {
+         .                   __m256i x = _mm256_loadu_si256((const __m256i *)(src + i));
+-- line 317 ----------------------------------------
+-- line 409 ----------------------------------------
+         .           {
+         .               assert(a != 0);
+         .               gf_mult_xors_count++;
+         .               mult_XORs_scalar_impl(d0, d1, a, nbytes, gf);
+         .           }
+         .           
+         .           void mult_XORs(const uint8_t *d0, uint8_t *d1, uint32_t a,
+         .                          size_t nbytes, const gf_t *gf)
+       768 ( 0.00%)  {
+     1,536 ( 0.00%)      assert(a != 0);          /* zero coefficients must be skipped by the caller */
+       768 ( 0.00%)      gf_mult_xors_count++;
+         .           #if GF_SIMD_BUILD
+     4,608 ( 0.00%)      if (gf->w == 8 && __builtin_cpu_supports("ssse3")) {
+     1,536 ( 0.00%)          if (a == 1)
+       450 ( 0.00%)              xor_region_ssse3(d0, d1, nbytes);
+14,747,175 (14.62%)  => src/milestone3/gf.c:xor_region_ssse3 (225x)
+         .                   else
+     1,086 ( 0.00%)              mult_xors_gf8_ssse3(d0, d1, (uint8_t)a, nbytes, gf);
+75,880,449 (75.21%)  => src/milestone3/gf.c:mult_xors_gf8_ssse3 (543x)
+         .                   return;
+         .               }
+         .               if ((gf->w == 16 || gf->w == 32) && __builtin_cpu_supports("avx2")) {
+         .                   if (a == 1)
+         .                       xor_region_avx2(d0, d1, nbytes);
+         .                   else if (gf->w == 16)
+         .                       mult_xors_gf16_avx2(d0, d1, (uint16_t)a, nbytes, gf);
+         .                   else
+-- line 433 ----------------------------------------
+
+--------------------------------------------------------------------------------
+-- Auto-annotated source: /usr/lib/gcc/x86_64-linux-gnu/11/include/emmintrin.h
+--------------------------------------------------------------------------------
+Ir                  
+
+-- line 695 ----------------------------------------
+         .           _mm_load_si128 (__m128i const *__P)
+         .           {
+         .             return *__P;
+         .           }
+         .           
+         .           extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+         .           _mm_loadu_si128 (__m128i_u const *__P)
+         .           {
+ 4,449,342 ( 4.41%)    return *__P;
+         .           }
+         .           
+         .           extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+         .           _mm_loadl_epi64 (__m128i_u const *__P)
+         .           {
+         .             return _mm_set_epi64 ((__m64)0LL, *(__m64_u *)__P);
+         .           }
+         .           
+-- line 711 ----------------------------------------
+-- line 731 ----------------------------------------
+         .           _mm_store_si128 (__m128i *__P, __m128i __B)
+         .           {
+         .             *__P = __B;
+         .           }
+         .           
+         .           extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+         .           _mm_storeu_si128 (__m128i_u *__P, __m128i __B)
+         .           {
+ 6,291,456 ( 6.24%)    *__P = __B;
+         .           }
+         .           
+         .           extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+         .           _mm_storel_epi64 (__m128i_u *__P, __m128i __B)
+         .           {
+         .             *(__m64_u *)__P = (__m64) ((__v2di)__B)[0];
+         .           }
+         .           
+-- line 747 ----------------------------------------
+-- line 1237 ----------------------------------------
+         .             ((__m128i)__builtin_ia32_psrldqi128 ((__m128i)(A), (int)(N) * 8))
+         .           #define _mm_slli_si128(A, N) \
+         .             ((__m128i)__builtin_ia32_pslldqi128 ((__m128i)(A), (int)(N) * 8))
+         .           #endif
+         .           
+         .           extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+         .           _mm_srli_epi16 (__m128i __A, int __B)
+         .           {
+ 8,896,512 ( 8.82%)    return (__m128i)__builtin_ia32_psrlwi128 ((__v8hi)__A, __B);
+         .           }
+         .           
+         .           extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+         .           _mm_srli_epi32 (__m128i __A, int __B)
+         .           {
+         .             return (__m128i)__builtin_ia32_psrldi128 ((__v4si)__A, __B);
+         .           }
+         .           
+-- line 1253 ----------------------------------------
+-- line 1303 ----------------------------------------
+         .           _mm_srl_epi64 (__m128i __A, __m128i __B)
+         .           {
+         .             return (__m128i)__builtin_ia32_psrlq128 ((__v2di)__A, (__v2di)__B);
+         .           }
+         .           
+         .           extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+         .           _mm_and_si128 (__m128i __A, __m128i __B)
+         .           {
+ 8,896,512 ( 8.82%)    return (__m128i) ((__v2du)__A & (__v2du)__B);
+         .           }
+         .           
+         .           extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+         .           _mm_andnot_si128 (__m128i __A, __m128i __B)
+         .           {
+         .             return (__m128i)__builtin_ia32_pandn128 ((__v2di)__A, (__v2di)__B);
+         .           }
+         .           
+-- line 1319 ----------------------------------------
+-- line 1321 ----------------------------------------
+         .           _mm_or_si128 (__m128i __A, __m128i __B)
+         .           {
+         .             return (__m128i) ((__v2du)__A | (__v2du)__B);
+         .           }
+         .           
+         .           extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+         .           _mm_xor_si128 (__m128i __A, __m128i __B)
+         .           {
+25,165,824 (24.94%)    return (__m128i) ((__v2du)__A ^ (__v2du)__B);
+         .           }
+         .           
+         .           extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+         .           _mm_cmpeq_epi8 (__m128i __A, __m128i __B)
+         .           {
+         .             return (__m128i) ((__v16qi)__A == (__v16qi)__B);
+         .           }
+         .           
+-- line 1337 ----------------------------------------
+
+--------------------------------------------------------------------------------
+The following files chosen for auto-annotation could not be found:
+--------------------------------------------------------------------------------
+  ./string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S
+
+--------------------------------------------------------------------------------
+Ir                  
+--------------------------------------------------------------------------------
+91,782,308 (90.98%)  events annotated
+

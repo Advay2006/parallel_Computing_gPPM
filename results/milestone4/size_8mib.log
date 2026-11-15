@@ -1,0 +1,3 @@
+PASS m=2 s=1 w=8 stripe=8 MiB: 6 variants x 10 trials
+PASS m=2 s=2 w=16 stripe=8 MiB: 6 variants x 10 trials
+PASS m=2 s=3 w=32 stripe=8 MiB: 6 variants x 10 trials

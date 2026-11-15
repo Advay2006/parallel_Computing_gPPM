@@ -1,0 +1,31 @@
+Processing [/home/arelius/projects/parallel_Computing_gPPM/results/milestone4/profiles/gpu_table_m2_s1.sqlite] with [/opt/nvidia/nsight-systems/2025.3.2/host-linux-x64/reports/cuda_api_sum.py]... 
+Time (%),Total Time (ns),Num Calls,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Name
+61.9,18287387,47,389093.3,377.0,306,2942720,612433.0,cudaStreamSynchronize
+30.2,8908672,4,2227168.0,2173908.0,7298,4553558,2562379.7,cudaMemcpy
+5.1,1512388,53,28535.6,405.0,294,706447,133258.9,cudaFree
+1.2,367930,3,122643.3,163690.0,2687,201553,105596.1,cudaMalloc
+0.4,117102,49,2389.8,2140.0,1672,6498,894.7,cudaMemcpyAsync
+0.4,105199,50,2104.0,848.5,502,58558,8159.5,cudaMallocAsync_v11020
+0.2,71797,17,4223.4,2733.0,2611,24394,5250.0,cudaLaunchKernel
+0.2,68269,34,2007.9,1612.0,1454,12553,1882.7,cudaEventRecord
+0.1,29587,16,1849.2,1170.0,1012,7929,1807.9,cudaStreamCreateWithFlags
+0.1,27557,16,1722.3,1296.5,1092,7882,1654.7,cudaStreamDestroy
+0.1,26711,1,26711.0,26711.0,26711,26711,0.0,cuProfilerStart
+0.0,11783,34,346.6,288.0,214,2030,304.7,cudaEventCreate
+0.0,9782,34,287.7,233.0,192,1271,188.6,cudaEventDestroy
+0.0,1662,17,97.8,57.0,54,544,123.8,cuKernelGetName
+
+Processing [/home/arelius/projects/parallel_Computing_gPPM/results/milestone4/profiles/gpu_table_m2_s1.sqlite] with [/opt/nvidia/nsight-systems/2025.3.2/host-linux-x64/reports/cuda_gpu_kern_sum.py]... 
+Time (%),Total Time (ns),Instances,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Name
+100.0,20240029,17,1190589.9,1156867.0,100257,2847496,497496.3,"matrix_vector_kernel(const unsigned int *, int, int, const int *, const int *, const unsigned char *, unsigned char *, unsigned long, unsigned long, int, int, int, int, const unsigned int *, const unsigned int *, const unsigned int *)"
+
+Processing [/home/arelius/projects/parallel_Computing_gPPM/results/milestone4/profiles/gpu_table_m2_s1.sqlite] with [/opt/nvidia/nsight-systems/2025.3.2/host-linux-x64/reports/cuda_gpu_mem_time_sum.py]... 
+Time (%),Total Time (ns),Count,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Operation
+50.1,4473133,1,4473133.0,4473133.0,4473133,4473133,0.0,[CUDA memcpy Device-to-Host]
+49.9,4458478,52,85740.0,960.0,352,4410509,611497.2,[CUDA memcpy Host-to-Device]
+
+Processing [/home/arelius/projects/parallel_Computing_gPPM/results/milestone4/profiles/gpu_table_m2_s1.sqlite] with [/opt/nvidia/nsight-systems/2025.3.2/host-linux-x64/reports/cuda_gpu_mem_size_sum.py]... 
+Total (MB),Count,Avg (MB),Med (MB),Min (MB),Max (MB),StdDev (MB),Operation
+33.607,52,0.646,0.001,0.000,33.554,4.653,[CUDA memcpy Host-to-Device]
+33.554,1,33.554,33.554,33.554,33.554,0.000,[CUDA memcpy Device-to-Host]
+
