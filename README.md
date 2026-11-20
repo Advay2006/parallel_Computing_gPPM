@@ -18,6 +18,8 @@ supported fields.
 
 Project plan and milestone breakdown: [`Context.md`](Context.md).
 Final IEEE research paper: [`docs/Milestone3_IEEE/main.pdf`](docs/Milestone3_IEEE/main.pdf).
+Thread-scaling, CPU-vs-GPU crossover, ablation and paper-reproduction report:
+[`reports/Evaluation_Report.md`](reports/Evaluation_Report.md).
 Final profiling, scaling evidence and reproduction instructions:
 [`results/milestone4/README.md`](results/milestone4/README.md).
 Standalone Milestone 1 report: [`Milestone_1_Report.pdf`](docs/Milestone_1_Report.pdf).
@@ -48,6 +50,8 @@ make m4-benchmark  # final CPU/GPU and stripe-size benchmark (see M4 README firs
 make m4-profile    # recovery-only Callgrind and Nsight traces
 make m4-analyze    # validate M4 measurements and generate summaries/plots
 make plots         # presentation-ready PNG and SVG charts in results/plots/
+make eval-benchmark # thread scaling (T=1..N), ablation and paper-figure runs (~30 min)
+make eval-analyze   # tables, taper/GPU-crossover metrics and figures in results/evaluation/
 make clean
 ```
 

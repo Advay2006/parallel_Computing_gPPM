@@ -190,7 +190,34 @@ test: $(TEST_GF) $(TEST_SD) $(TEST_COEFF) $(TEST_PPM) $(TEST_M3)
 	./$(TEST_PPM)
 	./$(TEST_M3)
 
+# Evaluation: thread scaling, ablation and paper reproductions (results/evaluation/).
+EVAL_DIR = src/evaluation
+EVAL_SRC = $(EVAL_DIR)/eval_bench.c
+M2_NOGF = $(M2_DIR)/matrix.c $(M2_DIR)/sd_code.c $(M2_DIR)/codec.c $(M2_DIR)/ppm.c $(M2_COEFF)
+EVAL_BINS = $(BUILD_DIR)/eval_m2_scalar $(BUILD_DIR)/eval_m2_simd $(BUILD_DIR)/eval_m3_scalar $(BUILD_DIR)/eval_m3_simd
+
+$(BUILD_DIR)/eval_m2_scalar: $(EVAL_SRC) $(M2_CORE) $(M2_COEFF) $(M2_HEADERS) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(OMPFLAGS) -DEVAL_M2 -DEVAL_BUILD='"m2_scalar"' -I$(M2_DIR) -o $@ $(EVAL_SRC) $(M2_CORE) $(M2_COEFF)
+
+# M2's fixed PPM schedule linked against M3's SIMD region arithmetic (M3 gf.h is a superset).
+$(BUILD_DIR)/eval_m2_simd: $(EVAL_SRC) $(M2_NOGF) $(M3_DIR)/gf.c $(M2_HEADERS) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(OMPFLAGS) -DEVAL_M2 -DEVAL_BUILD='"m2_simd"' -I$(M2_DIR) -o $@ $(EVAL_SRC) $(M2_NOGF) $(M3_DIR)/gf.c
+
+$(BUILD_DIR)/eval_m3_scalar: $(EVAL_SRC) $(M3_CORE) $(M3_COEFF) $(M3_HEADERS) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(OMPFLAGS) -DM3_DISABLE_SIMD -DEVAL_BUILD='"m3_scalar"' -I$(M3_DIR) -o $@ $(EVAL_SRC) $(M3_CORE) $(M3_COEFF)
+
+$(BUILD_DIR)/eval_m3_simd: $(EVAL_SRC) $(M3_CORE) $(M3_COEFF) $(M3_HEADERS) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(OMPFLAGS) -DEVAL_BUILD='"m3_simd"' -I$(M3_DIR) -o $@ $(EVAL_SRC) $(M3_CORE) $(M3_COEFF)
+
+eval-build: $(EVAL_BINS)
+
+eval-benchmark: $(EVAL_BINS)
+	$(PYTHON) scripts/run_evaluation.py
+
+eval-analyze:
+	$(PYTHON) scripts/analyze_evaluation.py
+
 clean:
 	rm -rf $(BUILD_DIR)
 
-.PHONY: all run sweep benchmark ppm-sweep ppm-benchmark m3-sweep m3-benchmark m3-plots gpu-test gpu-benchmark gpu-plots plots ppm-test m3-test test m4-benchmark m4-profile m4-analyze m4-package clean
+.PHONY: all run sweep benchmark ppm-sweep ppm-benchmark m3-sweep m3-benchmark m3-plots gpu-test gpu-benchmark gpu-plots plots ppm-test m3-test test m4-benchmark m4-profile m4-analyze m4-package eval-build eval-benchmark eval-analyze clean

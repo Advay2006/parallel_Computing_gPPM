@@ -1,0 +1,16 @@
+stripe MiB,m,s,w,GPU ms,GPU kernel,CPU T1 ms,CPU T2 ms,CPU T4 ms,CPU T8 ms,CPU/GPU T1,CPU/GPU T2,CPU/GPU T4,CPU/GPU T8,crossover T,verdict
+8,2,1,8,8.88,table,1.48,1.01,0.98,0.94,0.17,0.11,0.11,0.11,1.0,CPU faster even at T=1
+8,2,2,16,8.65,scalar,6.02,4.55,6.65,4.27,0.70,0.53,0.77,0.49,1.0,CPU faster even at T=1
+8,2,3,32,8.47,table,26.27,21.88,26.07,23.89,3.10,2.58,3.08,2.82,none,GPU faster at every tested T (1–8)
+32,1,1,8,21.13,table,4.09,3.11,2.54,1.98,0.19,0.15,0.12,0.09,1.0,CPU faster even at T=1
+32,1,2,16,21.62,scalar,16.62,9.80,9.58,8.79,0.77,0.45,0.44,0.41,1.0,CPU faster even at T=1
+32,1,3,32,20.17,table,34.33,25.50,25.12,30.08,1.70,1.26,1.25,1.49,none,GPU faster at every tested T (1–8)
+32,2,1,8,29.89,table,6.50,4.73,3.55,2.80,0.22,0.16,0.12,0.09,1.0,CPU faster even at T=1
+32,2,2,16,30.61,scalar,23.80,13.10,15.87,13.41,0.78,0.43,0.52,0.44,1.0,CPU faster even at T=1
+32,2,3,32,24.48,table,45.47,32.12,35.75,37.49,1.86,1.31,1.46,1.53,none,GPU faster at every tested T (1–8)
+32,3,1,8,37.82,table,8.20,5.27,4.08,2.82,0.22,0.14,0.11,0.07,1.0,CPU faster even at T=1
+32,3,2,16,36.63,scalar,31.10,16.44,23.58,18.54,0.85,0.45,0.64,0.51,1.0,CPU faster even at T=1
+32,3,3,32,28.64,table,60.86,39.79,40.17,43.42,2.12,1.39,1.40,1.52,none,GPU faster at every tested T (1–8)
+128,2,1,8,111.63,table,27.43,16.94,15.32,10.57,0.25,0.15,0.14,0.09,1.0,CPU faster even at T=1
+128,2,2,16,116.70,scalar,97.65,54.84,40.34,47.69,0.84,0.47,0.35,0.41,1.0,CPU faster even at T=1
+128,2,3,32,83.26,table,148.11,87.16,59.47,78.26,1.78,1.05,0.71,0.94,2.3,GPU faster while CPU T < 2.3

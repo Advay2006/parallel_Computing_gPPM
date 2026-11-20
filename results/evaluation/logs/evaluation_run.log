@@ -1,0 +1,50 @@
+PASS m2_scalar n=16 m=1 s=1 r=16 w=8 z=1 32 MiB: 15 variants x 10 trials
+PASS m2_simd n=16 m=1 s=1 r=16 w=8 z=1 32 MiB: 15 variants x 10 trials
+PASS m3_scalar n=16 m=1 s=1 r=16 w=8 z=1 32 MiB: 29 variants x 10 trials
+PASS m3_simd n=16 m=1 s=1 r=16 w=8 z=1 32 MiB: 29 variants x 10 trials
+PASS m2_scalar n=16 m=1 s=2 r=16 w=16 z=1 32 MiB: 15 variants x 10 trials
+PASS m2_simd n=16 m=1 s=2 r=16 w=16 z=1 32 MiB: 15 variants x 10 trials
+PASS m3_scalar n=16 m=1 s=2 r=16 w=16 z=1 32 MiB: 29 variants x 10 trials
+PASS m3_simd n=16 m=1 s=2 r=16 w=16 z=1 32 MiB: 29 variants x 10 trials
+PASS m2_scalar n=16 m=1 s=3 r=16 w=32 z=1 32 MiB: 15 variants x 10 trials
+PASS m2_simd n=16 m=1 s=3 r=16 w=32 z=1 32 MiB: 15 variants x 10 trials
+PASS m3_scalar n=16 m=1 s=3 r=16 w=32 z=1 32 MiB: 29 variants x 10 trials
+PASS m3_simd n=16 m=1 s=3 r=16 w=32 z=1 32 MiB: 29 variants x 10 trials
+PASS m2_scalar n=16 m=2 s=1 r=16 w=8 z=1 32 MiB: 15 variants x 10 trials
+PASS m2_simd n=16 m=2 s=1 r=16 w=8 z=1 32 MiB: 15 variants x 10 trials
+PASS m3_scalar n=16 m=2 s=1 r=16 w=8 z=1 32 MiB: 29 variants x 10 trials
+PASS m3_simd n=16 m=2 s=1 r=16 w=8 z=1 32 MiB: 29 variants x 10 trials
+PASS m2_scalar n=16 m=2 s=2 r=16 w=16 z=1 32 MiB: 15 variants x 10 trials
+PASS m2_simd n=16 m=2 s=2 r=16 w=16 z=1 32 MiB: 15 variants x 10 trials
+PASS m3_scalar n=16 m=2 s=2 r=16 w=16 z=1 32 MiB: 29 variants x 10 trials
+PASS m3_simd n=16 m=2 s=2 r=16 w=16 z=1 32 MiB: 29 variants x 10 trials
+PASS m2_scalar n=16 m=2 s=3 r=16 w=32 z=1 32 MiB: 15 variants x 10 trials
+PASS m2_simd n=16 m=2 s=3 r=16 w=32 z=1 32 MiB: 15 variants x 10 trials
+PASS m3_scalar n=16 m=2 s=3 r=16 w=32 z=1 32 MiB: 29 variants x 10 trials
+PASS m3_simd n=16 m=2 s=3 r=16 w=32 z=1 32 MiB: 29 variants x 10 trials
+PASS m2_scalar n=16 m=3 s=1 r=16 w=8 z=1 32 MiB: 15 variants x 10 trials
+PASS m2_simd n=16 m=3 s=1 r=16 w=8 z=1 32 MiB: 15 variants x 10 trials
+PASS m3_scalar n=16 m=3 s=1 r=16 w=8 z=1 32 MiB: 29 variants x 10 trials
+PASS m3_simd n=16 m=3 s=1 r=16 w=8 z=1 32 MiB: 29 variants x 10 trials
+PASS m2_scalar n=16 m=3 s=2 r=16 w=16 z=1 32 MiB: 15 variants x 10 trials
+PASS m2_simd n=16 m=3 s=2 r=16 w=16 z=1 32 MiB: 15 variants x 10 trials
+PASS m3_scalar n=16 m=3 s=2 r=16 w=16 z=1 32 MiB: 29 variants x 10 trials
+PASS m3_simd n=16 m=3 s=2 r=16 w=16 z=1 32 MiB: 29 variants x 10 trials
+PASS m2_scalar n=16 m=3 s=3 r=16 w=32 z=1 32 MiB: 15 variants x 10 trials
+PASS m2_simd n=16 m=3 s=3 r=16 w=32 z=1 32 MiB: 15 variants x 10 trials
+PASS m3_scalar n=16 m=3 s=3 r=16 w=32 z=1 32 MiB: 29 variants x 10 trials
+PASS m3_simd n=16 m=3 s=3 r=16 w=32 z=1 32 MiB: 29 variants x 10 trials
+done scaling in 766 s
+PASS m2_simd n=4 m=1 s=1 r=4 w=8 z=1 32 MiB: 3 variants x 5 trials
+PASS m3_simd n=4 m=1 s=1 r=4 w=8 z=1 32 MiB: 2 variants x 5 trials
+PASS m2_simd n=4 m=1 s=2 r=4 w=8 z=1 32 MiB: 3 variants x 5 trials
+PASS m3_simd n=4 m=1 s=2 r=4 w=8 z=1 32 MiB: 2 variants x 5 trials
+PASS m2_simd n=4 m=1 s=3 r=4 w=8 z=1 32 MiB: 3 variants x 5 trials
+PASS m3_simd n=4 m=1 s=3 r=4 w=8 z=1 32 MiB: 2 variants x 5 trials
+PASS m2_simd n=4 m=2 s=1 r=4 w=8 z=1 32 MiB: 3 variants x 5 trials
+PASS m3_simd n=4 m=2 s=1 r=4 w=8 z=1 32 MiB: 2 variants x 5 trials
+PASS m2_simd n=4 m=2 s=2 r=4 w=8 z=1 32 MiB: 3 variants x 5 trials
+PASS m3_simd n=4 m=2 s=2 r=4 w=8 z=1 32 MiB: 2 variants x 5 trials
+FAILED: /home/advay/Documents/Code/PC project/build/eval_m2_simd --csv /home/advay/Documents/Code/PC project/results/evaluation/raw/nr.csv.partial --append --n 4 --r 4 --m 2 --s 3 --threads 1,4 --baseline --trials 5 --tag nr
+Invalid geometry (z=1)
+
